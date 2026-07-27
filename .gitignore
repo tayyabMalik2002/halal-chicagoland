@@ -1,0 +1,23 @@
+.DS_Store
+
+# Node
+node_modules/
+npm-debug.log*
+coverage/
+backend/.tools/
+
+# Environment/secrets
+.env
+.env.*
+!.env.example
+
+# Python / Flask
+__pycache__/
+*.pyc
+venv/
+.venv/
+instance/
+*.db
+
+# Editor
+.vscode/

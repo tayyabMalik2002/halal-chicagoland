@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Find Certified Zabiha Halal restaurants near you on an interactive map of the Chicagoland area." />
+  <meta name="theme-color" content="#0D0D0D" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Map | Zabiha Halal Chicagoland" />
+  <meta property="og:description" content="Find Certified Zabiha Halal restaurants near you on an interactive map." />
+  <meta property="og:type" content="website" />
+
+  <title>Map | Zabiha Halal Chicagoland</title>
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <!-- Leaflet (OpenStreetMap) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+</head>
+<body>
+
+  <!-- ── Header ───────────────────────────────────────────── -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">☪</div>
+        <div class="logo-text">Zabiha Halal <span>Chicagoland</span></div>
+      </div>
+      <nav class="header-nav">
+        <a href="index.html" class="nav-link">Directory</a>
+        <a href="map.html" class="nav-link active">Map</a>
+      </nav>
+      <div class="header-badge">Verified Listings</div>
+    </div>
+  </header>
+
+  <!-- ── Map Hero ─────────────────────────────────────────── -->
+  <section class="map-hero">
+    <div class="map-hero-inner">
+      <div class="hero-eyebrow">☪ Chicagoland · Illinois</div>
+      <h1>Find Zabiha Halal Spots <em>Near You</em></h1>
+      <p class="hero-sub">
+        Share your location to see the closest certified Zabiha Halal restaurants,
+        or browse the full map of Chicagoland listings.
+      </p>
+      <button class="btn-locate" id="btn-locate">
+        <svg viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+        </svg>
+        <span id="btn-locate-label">Use My Location</span>
+      </button>
+      <p class="locate-status" id="locate-status"></p>
+    </div>
+  </section>
+
+  <!-- ── Map + List Layout ─────────────────────────────────── -->
+  <main class="map-layout">
+    <div id="leaflet-map" class="leaflet-map" role="application" aria-label="Map of Zabiha Halal restaurants"></div>
+
+    <aside class="map-list-panel">
+      <div class="map-list-header">
+        <span id="map-list-title">All Restaurants</span>
+        <span class="result-count" id="map-result-count"></span>
+      </div>
+      <div class="map-list" id="map-list" role="list">
+        <!-- populated by JS -->
+      </div>
+    </aside>
+  </main>
+
+  <!-- ── Modal ────────────────────────────────────────────── -->
+  <div
+    class="modal-overlay"
+    id="modal-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Restaurant details"
+  >
+    <div class="modal" id="modal-inner">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+  <!-- ── Footer ───────────────────────────────────────────── -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">☪ Zabiha Halal <span>Chicagoland</span></div>
+      <p class="footer-disclaimer">
+        All listed restaurants hold active Zabiha Halal certification from recognized bodies including
+        the Halal Monitoring Committee (HMC) and the Islamic Food and Nutrition Council of America (IFANCA).
+        Certifications are subject to renewal — always confirm current status directly with the restaurant.
+        This directory is for informational purposes only. Map data © OpenStreetMap contributors.
+      </p>
+      <p class="footer-copy">&copy; 2026 Zabiha Halal Chicagoland. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Scripts: Leaflet must load before map.js, and api.js before modal.js/map.js since they call its fetch helpers. -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="js/api.js"></script>
+  <script src="js/modal.js"></script>
+  <script src="js/map.js"></script>
+</body>
+</html>

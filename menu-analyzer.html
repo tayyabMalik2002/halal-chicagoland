@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Snap a photo of any menu, or search by restaurant name, and get an AI-powered breakdown of which items are safe for a halal-conscious vegetarian." />
+  <meta name="theme-color" content="#0D0D0D" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="AI Menu Analyzer | Zabiha Halal Chicagoland" />
+  <meta property="og:description" content="Find vegetarian-safe options at any restaurant, even ones without zabihah halal meat." />
+  <meta property="og:type" content="website" />
+
+  <title>AI Menu Analyzer | Zabiha Halal Chicagoland</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- ── Header ───────────────────────────────────────────── -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">☪</div>
+        <div class="logo-text">Zabiha Halal <span>Chicagoland</span></div>
+      </div>
+      <nav class="header-nav">
+        <a href="index.html" class="nav-link">Directory</a>
+        <a href="map.html" class="nav-link">Map</a>
+        <a href="menu-analyzer.html" class="nav-link active">Analyze a Menu</a>
+      </nav>
+      <div class="header-badge">Verified Listings</div>
+    </div>
+  </header>
+
+  <!-- ── Analyzer Hero ────────────────────────────────────── -->
+  <section class="analyzer-hero">
+    <div class="analyzer-hero-inner">
+      <div class="hero-eyebrow">☪ AI Menu Analyzer</div>
+      <h1>Find <em>Vegetarian-Safe</em><br>Options at Any Restaurant</h1>
+      <p class="hero-sub">
+        At a restaurant with no zabihah halal meat options? Snap a photo of the menu or search by name —
+        we'll flag hidden halal traps like cooking wine, gelatin, rennet, and shared fryers.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── Analyzer ─────────────────────────────────────────── -->
+  <main class="analyzer-main">
+    <div class="analyzer-panel">
+      <div class="analyzer-tabs" role="tablist">
+        <button
+          type="button"
+          class="analyzer-tab active"
+          id="tab-photo"
+          role="tab"
+          aria-selected="true"
+          aria-controls="panel-photo"
+        >📷 Snap a Photo</button>
+        <button
+          type="button"
+          class="analyzer-tab"
+          id="tab-name"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-name"
+        >🔎 Search by Name</button>
+      </div>
+
+      <!-- Mode 1: Snap a Photo -->
+      <div class="analyzer-panel-body" id="panel-photo" role="tabpanel" aria-labelledby="tab-photo">
+        <label class="photo-upload" id="photo-upload-label" for="menu-photo-input">
+          <div class="photo-upload-icon">📷</div>
+          <div class="photo-upload-text">Tap to take a photo or choose a file</div>
+          <div class="photo-upload-hint">JPG or PNG, up to 10MB</div>
+        </label>
+        <input
+          type="file"
+          id="menu-photo-input"
+          class="visually-hidden"
+          accept="image/jpeg,image/png"
+          capture="environment"
+          aria-describedby="photo-field-error"
+        />
+
+        <div class="photo-preview-wrap" id="photo-preview-wrap" hidden>
+          <img id="photo-preview-img" class="photo-preview-img" alt="Selected menu photo preview" />
+          <button type="button" class="photo-preview-remove" id="photo-preview-remove" aria-label="Remove photo">✕</button>
+        </div>
+
+        <p class="field-error" id="photo-field-error" role="alert"></p>
+
+        <div class="analyzer-fields">
+          <input type="text" id="photo-restaurant-name" class="analyzer-input" placeholder="Restaurant name (optional)" autocomplete="off" />
+          <input type="text" id="photo-restaurant-location" class="analyzer-input" placeholder="Location, e.g. Chicago, IL (optional)" autocomplete="off" />
+        </div>
+
+        <button type="button" class="btn-analyze" id="btn-analyze-photo" disabled>Analyze Menu Photo</button>
+      </div>
+
+      <!-- Mode 2: Search by Name -->
+      <div class="analyzer-panel-body" id="panel-name" role="tabpanel" aria-labelledby="tab-name" hidden>
+        <div class="analyzer-fields">
+          <input type="text" id="name-restaurant-name" class="analyzer-input" placeholder="Restaurant name" autocomplete="off" />
+          <input type="text" id="name-restaurant-location" class="analyzer-input" placeholder="Location, e.g. Chicago, IL (optional)" autocomplete="off" />
+        </div>
+        <button type="button" class="btn-analyze" id="btn-analyze-name" disabled>Find Vegetarian Options</button>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="analyzer-results" id="analyzer-results" aria-live="polite"></div>
+  </main>
+
+  <!-- ── Footer ───────────────────────────────────────────── -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">☪ Zabiha Halal <span>Chicagoland</span></div>
+      <p class="footer-disclaimer">
+        The AI Menu Analyzer is an informational tool, not a certification. It cannot verify preparation
+        methods or cross-contamination — always confirm with restaurant staff before ordering.
+      </p>
+      <p class="footer-copy">&copy; 2026 Zabiha Halal Chicagoland. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Scripts: api.js must load first since menuAnalyzer.js calls its fetch helpers. -->
+  <script src="js/api.js"></script>
+  <script src="js/menuAnalyzer.js"></script>
+</body>
+</html>

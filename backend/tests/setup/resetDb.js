@@ -5,12 +5,16 @@ require('dotenv').config();
 
 // Deleted in FK-safe order: children before parents.
 const TABLES_IN_DELETE_ORDER = [
+  'menu_analysis_items',
+  'analysis_requests',
+  'menu_analyses',
   'order_items',
   'orders',
   'reservations',
   'menu_items',
   'menu_categories',
   'customers',
+  'restaurants',
 ];
 
 async function resetDatabase() {
@@ -35,7 +39,12 @@ async function resetDatabase() {
     .readFileSync(path.join(__dirname, '../../database/seed.sql'), 'utf8')
     .replace(/USE\s+zabiha_halal_db\s*;/i, '');
 
+  const menuAnalyzerSeedSql = fs
+    .readFileSync(path.join(__dirname, '../../sql/seed_menu_analyzer.sql'), 'utf8')
+    .replace(/USE\s+zabiha_halal_db\s*;/i, '');
+
   await connection.query(seedSql);
+  await connection.query(menuAnalyzerSeedSql);
   await connection.end();
 }
 

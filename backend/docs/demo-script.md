@@ -2,6 +2,8 @@
 
 Use this script to record the Milestone 2 demo video. Each step pairs a Postman call (from `tests/zabiha-halal.postman_collection.json`) with a SQL query to run in a second terminal/MySQL client immediately afterward, so the database change is visible on screen.
 
+GitHub Link- https://github.com/tayyabMalik2002/halal-chicagoland.git 
+
 **Before recording:** reset to a clean, known state:
 ```bash
 mysql -u <user> -p < database/schema.sql

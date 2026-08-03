@@ -11,6 +11,13 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
+  // Multer upload errors
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({
+      error: { message: 'Image exceeds the maximum allowed size of 10MB.' },
+    });
+  }
+
   // MySQL foreign key / constraint errors
   if (err.code === 'ER_NO_REFERENCED_ROW_2' || err.code === 'ER_NO_REFERENCED_ROW') {
     return res.status(400).json({

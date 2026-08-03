@@ -133,3 +133,68 @@ CREATE TABLE reservations (
 
 CREATE INDEX idx_reservations_customer ON reservations(customer_id);
 CREATE INDEX idx_reservations_date ON reservations(reservation_date);
+
+-- ------------------------------------------------------------
+-- restaurants (AI Menu Analyzer — third-party restaurants a
+-- customer photographs a menu at, not the Zabiha Halal venue)
+-- ------------------------------------------------------------
+CREATE TABLE restaurants (
+  restaurant_id   INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name            VARCHAR(150) NOT NULL,
+  address         VARCHAR(255) NULL,
+  cuisine_type    VARCHAR(80)  NULL,
+  source          ENUM('user_submitted', 'web_search', 'seed') NOT NULL DEFAULT 'user_submitted',
+  created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_restaurants_name (name)
+) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
+-- menu_analyses
+-- ------------------------------------------------------------
+CREATE TABLE menu_analyses (
+  analysis_id     INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  restaurant_id   INT UNSIGNED NULL,
+  status          ENUM('completed', 'failed') NOT NULL,
+  created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_menu_analyses_restaurant
+    FOREIGN KEY (restaurant_id) REFERENCES restaurants(restaurant_id)
+    ON DELETE SET NULL ON UPDATE CASCADE,
+  KEY idx_menu_analyses_restaurant (restaurant_id),
+  KEY idx_menu_analyses_status (status)
+) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
+-- menu_analysis_items (AI-classified line items for one analysis;
+-- named distinctly from menu_items above, which is this
+-- restaurant's own ordering menu)
+-- ------------------------------------------------------------
+CREATE TABLE menu_analysis_items (
+  analysis_item_id  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  analysis_id       INT UNSIGNED NOT NULL,
+  item_name         VARCHAR(150) NOT NULL,
+  classification    ENUM('vegetarian_safe', 'safe_with_modification', 'doubtful', 'not_suitable') NOT NULL,
+  reasoning         TEXT NULL,
+  confidence        ENUM('high', 'medium', 'low') NOT NULL,
+  created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_menu_analysis_items_analysis
+    FOREIGN KEY (analysis_id) REFERENCES menu_analyses(analysis_id)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  KEY idx_menu_analysis_items_analysis (analysis_id)
+) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
+-- analysis_requests (audit log of every call to the AI Menu
+-- Analyzer endpoint, success or failure)
+-- ------------------------------------------------------------
+CREATE TABLE analysis_requests (
+  request_id      INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  endpoint        VARCHAR(150) NOT NULL,
+  restaurant_id   INT UNSIGNED NULL,
+  response_code   INT UNSIGNED NOT NULL,
+  created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_analysis_requests_restaurant
+    FOREIGN KEY (restaurant_id) REFERENCES restaurants(restaurant_id)
+    ON DELETE SET NULL ON UPDATE CASCADE,
+  KEY idx_analysis_requests_restaurant (restaurant_id),
+  KEY idx_analysis_requests_created_at (created_at)
+) ENGINE=InnoDB;

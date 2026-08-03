@@ -49,7 +49,7 @@ class Restaurant(db.Model):
     review_count = db.Column(db.Integer, nullable=False)
     price_range = db.Column(db.String(8), nullable=False)
     certified_by = db.Column(db.String(256), nullable=False)
-    cert_year = db.Column(db.Integer, nullable=False)
+    cert_year = db.Column(db.Integer, nullable=True)
     description = db.Column(db.Text, nullable=False)
     maps_query = db.Column(db.String(256), nullable=False)
     lat = db.Column(db.Float, nullable=False)

@@ -7,6 +7,7 @@ const customersRoutes = require('./routes/customers');
 const ordersRoutes = require('./routes/orders');
 const reservationsRoutes = require('./routes/reservations');
 const reportsRoutes = require('./routes/reports');
+const menuAnalysisRoutes = require('./routes/menuAnalysis');
 
 const notFoundHandler = require('./middleware/notFoundHandler');
 const errorHandler = require('./middleware/errorHandler');
@@ -24,6 +25,7 @@ app.use('/api/customers', customersRoutes);
 app.use('/api/orders', ordersRoutes);
 app.use('/api/reservations', reservationsRoutes);
 app.use('/api/reports', reportsRoutes);
+app.use('/api', menuAnalysisRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

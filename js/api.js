@@ -4,6 +4,11 @@
 
 const API_BASE = "http://127.0.0.1:5001/api/v1";
 
+/* ─── AI Menu Analyzer client ─────────────────────────────────
+   Separate backend: the Express API (backend/), not the Flask
+   directory API above. ────────────────────────────────────── */
+const MENU_ANALYZER_API_BASE = "http://localhost:3000/api";
+
 async function apiFetch(path, params) {
   const url = new URL(API_BASE + path);
   if (params) {
@@ -50,4 +55,22 @@ function fetchCuisines() {
 // Fetches the distinct list of areas for the filter dropdown.
 function fetchAreas() {
   return apiFetch("/areas");
+}
+
+// Submits a menu photo and/or restaurant name to the AI Menu Analyzer
+// (Express backend). Pass a FormData with `image` and/or `restaurant_name` /
+// `restaurant_location` fields. Throws an Error with a `.status` property
+// set to the HTTP status code on failure.
+async function analyzeMenu(formData) {
+  const res = await fetch(`${MENU_ANALYZER_API_BASE}/menu-analysis`, {
+    method: "POST",
+    body: formData,
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(body.error?.message || `Request failed (${res.status})`);
+    err.status = res.status;
+    throw err;
+  }
+  return body.data;
 }

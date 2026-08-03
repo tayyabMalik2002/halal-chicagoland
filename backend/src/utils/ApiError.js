@@ -16,6 +16,18 @@ class ApiError extends Error {
   static conflict(message) {
     return new ApiError(409, message);
   }
+
+  static unsupportedMediaType(message) {
+    return new ApiError(415, message);
+  }
+
+  static unprocessable(message, details = null) {
+    return new ApiError(422, message, details);
+  }
+
+  static badGateway(message, details = null) {
+    return new ApiError(502, message, details);
+  }
 }
 
 module.exports = ApiError;

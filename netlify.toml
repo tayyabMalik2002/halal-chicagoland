@@ -1,0 +1,23 @@
+[build]
+  publish = "."
+
+# The repo root also contains the backend/, backend-flask/, and mobile/
+# source trees (not part of the deployed site). Force these to 404 instead
+# of being served as static files.
+[[redirects]]
+  from = "/backend/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/backend-flask/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/mobile/*"
+  to = "/404.html"
+  status = 404
+  force = true

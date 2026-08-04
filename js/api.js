@@ -2,19 +2,12 @@
    Thin fetch wrapper around the Flask backend (backend-flask/).
    Requires the API to be running at API_BASE. ─────────────────── */
 
-// TODO: set to the deployed Flask backend URL (e.g. Railway) before/at deploy.
-// Falls back to localhost so local dev is unaffected.
-const API_BASE = location.hostname === "localhost" || location.hostname === "127.0.0.1"
-  ? "http://127.0.0.1:5001/api/v1"
-  : "https://REPLACE-ME-FLASK-BACKEND.up.railway.app/api/v1";
+const API_BASE = "http://127.0.0.1:5001/api/v1";
 
 /* ─── AI Menu Analyzer client ─────────────────────────────────
    Separate backend: the Express API (backend/), not the Flask
    directory API above. ────────────────────────────────────── */
-// TODO: set to the deployed Express backend URL (e.g. Railway) before/at deploy.
-const MENU_ANALYZER_API_BASE = location.hostname === "localhost" || location.hostname === "127.0.0.1"
-  ? "http://localhost:3000/api"
-  : "https://REPLACE-ME-EXPRESS-BACKEND.up.railway.app/api";
+const MENU_ANALYZER_API_BASE = "http://localhost:3000/api";
 
 async function apiFetch(path, params) {
   const url = new URL(API_BASE + path);

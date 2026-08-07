@@ -2,7 +2,7 @@
 
 These test cases correspond 1:1 with the automated Jest + Supertest suite in `/tests/*.test.js`. All cases were executed against a real MySQL database (`zabiha_halal_db_test`), reset to a known seeded state before each test file runs (see `/tests/setup/resetDb.js`).
 
-Actual Result / Pass-Fail columns reflect the run recorded in [`test-results.md`](./test-results.md) on **2026-07-20**. Full raw output: `npm test`.
+Actual Result / Pass-Fail columns reflect the run recorded in [`test-results.md`](./test-results.md) on **2026-08-07**. Full raw output: `npm test`.
 
 ## Menu Categories — `/api/menu-categories`
 
@@ -115,4 +115,27 @@ Actual Result / Pass-Fail columns reflect the run recorded in [`test-results.md`
 | TC-RPT-06 | Popular items — custom limit | `GET /api/reports/popular-items?limit=2` | 200, exactly 2 rows | 200, matched | Pass |
 | TC-RPT-07 | Popular items — invalid limit | `GET /api/reports/popular-items?limit=-1` | 400 | 400 returned | Pass |
 
-**Totals: 81 test cases, 81 passed, 0 failed.**
+## AI Menu Analyzer — `/api/menu-analysis`, `/api/restaurants/:id/menu-analysis`
+
+The Anthropic SDK is mocked (`jest.mock('@anthropic-ai/sdk', ...)`) so these cases exercise the full route → controller → service → MySQL persistence path without a real AI call.
+
+| TC ID | Description | Input | Expected Result | Actual Result | Pass/Fail |
+|---|---|---|---|---|---|
+| TC-AI-01 | Photo analysis, no restaurant name (happy path) | `POST /api/menu-analysis` with `image` only | 201, `source: "ai_analysis"`, 2 items, disclaimer present, 1 AI call | 201, matched | Pass |
+| TC-AI-02 | Cached analysis on second request for same restaurant | `POST /api/menu-analysis` with `image` + `restaurant_name`, repeated (case-insensitive) | First: 201 `ai_analysis`; second: 200 `source: "cache"`, no extra AI call | 201 then 200, matched | Pass |
+| TC-AI-03 | Creates restaurant via web search when name is new | `POST /api/menu-analysis` `image` + `restaurant_name` + `restaurant_location` (unseen name) | 201, `restaurant.source: "web_search"`, address populated, 2 AI calls, `restaurants` row persisted | 201, matched | Pass |
+| TC-AI-04 | Rejects request with neither image nor name | `POST /api/menu-analysis` (empty body) | 400, "menu photo or a restaurant name", no AI call | 400 returned | Pass |
+| TC-AI-05 | Rejects unsupported image mime type | `POST /api/menu-analysis` `image` as `text/plain` | 415, no AI call | 415 returned | Pass |
+| TC-AI-06 | Rejects image over 10MB | `POST /api/menu-analysis` `image` 11MB | 413, no AI call | 413 returned | Pass |
+| TC-AI-07 | 422 when AI reports photo is not a menu | AI mock returns `{"error":"not_a_menu"}` | 422 | 422 returned | Pass |
+| TC-AI-08 | 502 when AI response is not valid JSON | AI mock returns non-JSON text | 502 | 502 returned | Pass |
+| TC-AI-09 | 502 when the Anthropic API call itself fails | AI mock rejects with an error | 502 | 502 returned | Pass |
+| TC-AI-10 | Name-only search finds a menu via web search | `POST /api/menu-analysis` `restaurant_name` + `restaurant_location`, no image | 201, `source: "ai_web_search"`, `menu_source_url` set, `restaurant.source: "web_search"`, 1 AI call | 201, matched | Pass |
+| TC-AI-11 | Cached analysis on second name-only request | Same `restaurant_name` (case-insensitive), repeated, no image | First: 201; second: 200 `source: "cache"`, no extra AI call | 201 then 200, matched | Pass |
+| TC-AI-12 | 404 when AI cannot find the restaurant/menu | AI mock returns `{"error":"menu_not_found"}` | 404, 1 AI call | 404 returned | Pass |
+| TC-AI-13 | Get most recent completed analysis for a restaurant | `GET /api/restaurants/:id/menu-analysis` after an analysis was created | 200, `source: "cache"`, matching items | 200, matched | Pass |
+| TC-AI-14 | Get analysis — restaurant with no completed analysis | `GET /api/restaurants/:id/menu-analysis` (restaurant exists, no analysis) | 404 | 404 returned | Pass |
+| TC-AI-15 | Get analysis — restaurant does not exist | `GET /api/restaurants/9999/menu-analysis` | 404 | 404 returned | Pass |
+| TC-AI-16 | Get analysis — malformed restaurant id | `GET /api/restaurants/abc/menu-analysis` | 400 | 400 returned | Pass |
+
+**Totals: 97 test cases, 97 passed, 0 failed.**

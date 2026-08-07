@@ -22,9 +22,11 @@ describe('GET /api/reports/daily-totals', () => {
   });
 
   it('returns a single day total when a date is provided', async () => {
-    const res = await request(app).get('/api/reports/daily-totals?date=2026-07-20');
+    // Seeded orders get created_at = CURRENT_TIMESTAMP at seed time, so "today" is whatever day the suite runs.
+    const today = new Date().toISOString().slice(0, 10);
+    const res = await request(app).get(`/api/reports/daily-totals?date=${today}`);
     expect(res.status).toBe(200);
-    expect(res.body.data.order_date).toBe('2026-07-20');
+    expect(res.body.data.order_date).toBe(today);
     expect(res.body.data.order_count).toBe(6);
     // 39.96 + 28.98 + 39.96 + 23.47 + 58.44 = 190.81 (order 6 is cancelled, excluded from revenue)
     expect(Number(res.body.data.total_revenue)).toBeCloseTo(190.81);

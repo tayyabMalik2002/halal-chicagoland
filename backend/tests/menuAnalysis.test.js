@@ -58,12 +58,12 @@ describe('POST /api/menu-analysis', () => {
     expect(res.body.data.disclaimer).toMatch(/cannot verify preparation methods/i);
     expect(mockCreate).toHaveBeenCalledTimes(1);
 
-    const [rows] = await pool.query('SELECT * FROM menu_analyses WHERE analysis_id = ?', [res.body.data.analysis_id]);
+    const { rows } = await pool.query('SELECT * FROM menu_analyses WHERE analysis_id = $1', [res.body.data.analysis_id]);
     expect(rows.length).toBe(1);
     expect(rows[0].restaurant_id).toBeNull();
     expect(rows[0].status).toBe('completed');
 
-    const [items] = await pool.query('SELECT * FROM menu_analysis_items WHERE analysis_id = ?', [res.body.data.analysis_id]);
+    const { rows: items } = await pool.query('SELECT * FROM menu_analysis_items WHERE analysis_id = $1', [res.body.data.analysis_id]);
     expect(items.length).toBe(2);
   });
 
@@ -120,7 +120,7 @@ describe('POST /api/menu-analysis', () => {
     expect(res.body.data.restaurant.source).toBe('web_search');
     expect(res.body.data.restaurant.address).toBe('200 Web St, Chicago, IL');
 
-    const [rows] = await pool.query('SELECT * FROM restaurants WHERE restaurant_id = ?', [res.body.data.restaurant.restaurant_id]);
+    const { rows } = await pool.query('SELECT * FROM restaurants WHERE restaurant_id = $1', [res.body.data.restaurant.restaurant_id]);
     expect(rows.length).toBe(1);
     expect(rows[0].source).toBe('web_search');
   });
@@ -205,7 +205,7 @@ describe('POST /api/menu-analysis — name-only search (no image)', () => {
     expect(res.body.data.items.length).toBe(2);
     expect(mockCreate).toHaveBeenCalledTimes(1);
 
-    const [rows] = await pool.query('SELECT * FROM menu_analyses WHERE analysis_id = ?', [res.body.data.analysis_id]);
+    const { rows } = await pool.query('SELECT * FROM menu_analyses WHERE analysis_id = $1', [res.body.data.analysis_id]);
     expect(rows.length).toBe(1);
     expect(rows[0].restaurant_id).toBe(res.body.data.restaurant.restaurant_id);
   });
@@ -266,7 +266,7 @@ describe('GET /api/restaurants/:id/menu-analysis', () => {
   });
 
   it('returns 404 for a restaurant with no completed analysis', async () => {
-    const [rows] = await pool.query('SELECT restaurant_id FROM restaurants WHERE name = ?', ['Cafecito Pilsen']);
+    const { rows } = await pool.query('SELECT restaurant_id FROM restaurants WHERE name = $1', ['Cafecito Pilsen']);
     const res = await request(app).get(`/api/restaurants/${rows[0].restaurant_id}/menu-analysis`);
     expect(res.status).toBe(404);
   });

@@ -53,7 +53,7 @@ const validateUpdate = (body) => {
 };
 
 const listCustomers = async (req, res) => {
-  const [rows] = await pool.query(
+  const { rows } = await pool.query(
     `SELECT ${CUSTOMER_COLUMNS} FROM customers ORDER BY customer_id ASC`
   );
   res.json({ data: rows });
@@ -61,8 +61,8 @@ const listCustomers = async (req, res) => {
 
 const getCustomer = async (req, res) => {
   const { id } = req.params;
-  const [rows] = await pool.query(
-    `SELECT ${CUSTOMER_COLUMNS} FROM customers WHERE customer_id = ?`,
+  const { rows } = await pool.query(
+    `SELECT ${CUSTOMER_COLUMNS} FROM customers WHERE customer_id = $1`,
     [id]
   );
   if (!rows.length) throw ApiError.notFound(`Customer ${id} not found.`);
@@ -73,34 +73,34 @@ const registerCustomer = async (req, res) => {
   validateRegistration(req.body);
   const { first_name, last_name, email, phone, password } = req.body;
 
-  const [dupe] = await pool.query('SELECT customer_id FROM customers WHERE email = ?', [email]);
+  const { rows: dupe } = await pool.query('SELECT customer_id FROM customers WHERE email = $1', [email]);
   if (dupe.length) throw ApiError.conflict('A customer with this email already exists.');
 
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-  const [result] = await pool.query(
-    'INSERT INTO customers (first_name, last_name, email, phone, password_hash) VALUES (?, ?, ?, ?, ?)',
+  const { rows: inserted } = await pool.query(
+    'INSERT INTO customers (first_name, last_name, email, phone, password_hash) VALUES ($1, $2, $3, $4, $5) RETURNING customer_id',
     [first_name.trim(), last_name.trim(), email.trim(), phone.trim(), passwordHash]
   );
 
-  const [rows] = await pool.query(
-    `SELECT ${CUSTOMER_COLUMNS} FROM customers WHERE customer_id = ?`,
-    [result.insertId]
+  const { rows } = await pool.query(
+    `SELECT ${CUSTOMER_COLUMNS} FROM customers WHERE customer_id = $1`,
+    [inserted[0].customer_id]
   );
   res.status(201).json({ data: rows[0] });
 };
 
 const updateCustomer = async (req, res) => {
   const { id } = req.params;
-  const [existing] = await pool.query('SELECT * FROM customers WHERE customer_id = ?', [id]);
+  const { rows: existing } = await pool.query('SELECT * FROM customers WHERE customer_id = $1', [id]);
   if (!existing.length) throw ApiError.notFound(`Customer ${id} not found.`);
 
   const data = validateUpdate(req.body);
 
   if (data.email && data.email !== existing[0].email) {
-    const [dupe] = await pool.query('SELECT customer_id FROM customers WHERE email = ? AND customer_id != ?', [
-      data.email,
-      id,
-    ]);
+    const { rows: dupe } = await pool.query(
+      'SELECT customer_id FROM customers WHERE email = $1 AND customer_id != $2',
+      [data.email, id]
+    );
     if (dupe.length) throw ApiError.conflict('A customer with this email already exists.');
   }
 
@@ -108,12 +108,12 @@ const updateCustomer = async (req, res) => {
   const merged = { ...existing[0], ...data, password_hash: passwordHash };
 
   await pool.query(
-    'UPDATE customers SET first_name = ?, last_name = ?, email = ?, phone = ?, password_hash = ? WHERE customer_id = ?',
+    'UPDATE customers SET first_name = $1, last_name = $2, email = $3, phone = $4, password_hash = $5 WHERE customer_id = $6',
     [merged.first_name, merged.last_name, merged.email, merged.phone, merged.password_hash, id]
   );
 
-  const [rows] = await pool.query(
-    `SELECT ${CUSTOMER_COLUMNS} FROM customers WHERE customer_id = ?`,
+  const { rows } = await pool.query(
+    `SELECT ${CUSTOMER_COLUMNS} FROM customers WHERE customer_id = $1`,
     [id]
   );
   res.json({ data: rows[0] });
@@ -121,10 +121,10 @@ const updateCustomer = async (req, res) => {
 
 const deleteCustomer = async (req, res) => {
   const { id } = req.params;
-  const [existing] = await pool.query('SELECT customer_id FROM customers WHERE customer_id = ?', [id]);
+  const { rows: existing } = await pool.query('SELECT customer_id FROM customers WHERE customer_id = $1', [id]);
   if (!existing.length) throw ApiError.notFound(`Customer ${id} not found.`);
 
-  await pool.query('DELETE FROM customers WHERE customer_id = ?', [id]);
+  await pool.query('DELETE FROM customers WHERE customer_id = $1', [id]);
   res.status(204).send();
 };
 

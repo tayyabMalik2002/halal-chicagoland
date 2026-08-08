@@ -10,12 +10,12 @@ const dailyTotals = async (req, res) => {
     if (!isDateString(req.query.date)) {
       throw ApiError.badRequest('date query parameter must be a valid date in YYYY-MM-DD format.');
     }
-    const [rows] = await pool.query(
+    const { rows } = await pool.query(
       `SELECT DATE(created_at) AS order_date,
               COUNT(*) AS order_count,
-              COALESCE(SUM(CASE WHEN status NOT IN (?) THEN total_amount ELSE 0 END), 0) AS total_revenue
+              COALESCE(SUM(CASE WHEN status <> ALL($1) THEN total_amount ELSE 0 END), 0) AS total_revenue
        FROM orders
-       WHERE DATE(created_at) = ?
+       WHERE DATE(created_at) = $2
        GROUP BY DATE(created_at)`,
       [NON_REVENUE_STATUSES, req.query.date]
     );
@@ -24,10 +24,10 @@ const dailyTotals = async (req, res) => {
     });
   }
 
-  const [rows] = await pool.query(
+  const { rows } = await pool.query(
     `SELECT DATE(created_at) AS order_date,
             COUNT(*) AS order_count,
-            COALESCE(SUM(CASE WHEN status NOT IN (?) THEN total_amount ELSE 0 END), 0) AS total_revenue
+            COALESCE(SUM(CASE WHEN status <> ALL($1) THEN total_amount ELSE 0 END), 0) AS total_revenue
      FROM orders
      GROUP BY DATE(created_at)
      ORDER BY order_date DESC`,
@@ -46,17 +46,17 @@ const popularItems = async (req, res) => {
     limit = parsed;
   }
 
-  const [rows] = await pool.query(
+  const { rows } = await pool.query(
     `SELECT mi.item_id, mi.name, mi.category_id,
             SUM(oi.quantity) AS total_quantity_ordered,
             ROUND(SUM(oi.quantity * oi.unit_price), 2) AS total_revenue
      FROM order_items oi
      JOIN menu_items mi ON mi.item_id = oi.item_id
      JOIN orders o ON o.order_id = oi.order_id
-     WHERE o.status NOT IN (?)
+     WHERE o.status <> ALL($1)
      GROUP BY mi.item_id, mi.name, mi.category_id
      ORDER BY total_quantity_ordered DESC
-     LIMIT ?`,
+     LIMIT $2`,
     [NON_REVENUE_STATUSES, limit]
   );
   res.json({ data: rows });

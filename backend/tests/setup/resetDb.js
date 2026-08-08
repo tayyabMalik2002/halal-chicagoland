@@ -1,10 +1,11 @@
 const fs = require('fs');
 const path = require('path');
-const mysql = require('mysql2/promise');
+const { Client } = require('pg');
 require('dotenv').config();
 
-// Deleted in FK-safe order: children before parents.
-const TABLES_IN_DELETE_ORDER = [
+// Order doesn't matter for the TRUNCATE itself (CASCADE handles FKs), but
+// keeping children-before-parents here documents the dependency graph.
+const TABLES_TO_RESET = [
   'menu_analysis_items',
   'analysis_requests',
   'menu_analyses',
@@ -17,35 +18,35 @@ const TABLES_IN_DELETE_ORDER = [
   'restaurants',
 ];
 
-async function resetDatabase() {
-  const testDbName = process.env.TEST_DB_NAME || 'zabiha_halal_db_test';
-
-  const connection = await mysql.createConnection({
+function buildTestClientConfig() {
+  const connectionString = process.env.TEST_DATABASE_URL;
+  if (connectionString) {
+    return { connectionString, ssl: { rejectUnauthorized: false } };
+  }
+  return {
     host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT),
+    port: Number(process.env.DB_PORT) || 5432,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: testDbName,
-    multipleStatements: true,
-  });
+    database: process.env.TEST_DB_NAME || 'zabiha_halal_db_test',
+    ssl: process.env.DB_SSL === 'false' ? false : { rejectUnauthorized: false },
+  };
+}
 
-  await connection.query('SET FOREIGN_KEY_CHECKS = 0');
-  for (const table of TABLES_IN_DELETE_ORDER) {
-    await connection.query(`TRUNCATE TABLE ${table}`);
-  }
-  await connection.query('SET FOREIGN_KEY_CHECKS = 1');
+async function resetDatabase() {
+  const client = new Client(buildTestClientConfig());
+  await client.connect();
 
-  const seedSql = fs
-    .readFileSync(path.join(__dirname, '../../database/seed.sql'), 'utf8')
-    .replace(/USE\s+zabiha_halal_db\s*;/i, '');
+  // RESTART IDENTITY resets each table's identity sequence back to 1
+  // (unlike MySQL's TRUNCATE, Postgres doesn't do this by default).
+  await client.query(`TRUNCATE TABLE ${TABLES_TO_RESET.join(', ')} RESTART IDENTITY CASCADE`);
 
-  const menuAnalyzerSeedSql = fs
-    .readFileSync(path.join(__dirname, '../../sql/seed_menu_analyzer.sql'), 'utf8')
-    .replace(/USE\s+zabiha_halal_db\s*;/i, '');
+  const seedSql = fs.readFileSync(path.join(__dirname, '../../database/seed.sql'), 'utf8');
+  const menuAnalyzerSeedSql = fs.readFileSync(path.join(__dirname, '../../sql/seed_menu_analyzer.sql'), 'utf8');
 
-  await connection.query(seedSql);
-  await connection.query(menuAnalyzerSeedSql);
-  await connection.end();
+  await client.query(seedSql);
+  await client.query(menuAnalyzerSeedSql);
+  await client.end();
 }
 
 module.exports = resetDatabase;

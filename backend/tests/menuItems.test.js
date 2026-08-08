@@ -28,7 +28,7 @@ describe('GET /api/menu-items', () => {
   it('filters by availability', async () => {
     const res = await request(app).get('/api/menu-items?available=true');
     expect(res.status).toBe(200);
-    res.body.data.forEach((item) => expect(item.is_available).toBe(1));
+    res.body.data.forEach((item) => expect(item.is_available).toBe(true));
   });
 
   it('rejects an invalid available query value', async () => {
@@ -63,7 +63,7 @@ describe('POST /api/menu-items', () => {
     });
     expect(res.status).toBe(201);
     expect(res.body.data.name).toBe('Chicken Karahi');
-    expect(res.body.data.is_available).toBe(1);
+    expect(res.body.data.is_available).toBe(true);
   });
 
   it('rejects a negative price', async () => {
@@ -104,7 +104,7 @@ describe('PATCH /api/menu-items/:id/availability', () => {
       .patch('/api/menu-items/9/availability')
       .send({ is_available: false });
     expect(res.status).toBe(200);
-    expect(res.body.data.is_available).toBe(0);
+    expect(res.body.data.is_available).toBe(false);
   });
 
   it('rejects a non-boolean is_available value', async () => {

@@ -5,8 +5,6 @@
 -- Run AFTER menu_analyzer.sql
 -- ============================================================
 
-USE zabiha_halal_db;
-
 INSERT INTO restaurants (name, address, cuisine_type, source) VALUES
 ('Cafecito Pilsen',       '1401 W 18th St, Chicago, IL 60608',   'Latin American', 'seed'),
 ('Green Sesame Kitchen',  '3201 N Clark St, Chicago, IL 60657',  'Asian Fusion',   'seed'),

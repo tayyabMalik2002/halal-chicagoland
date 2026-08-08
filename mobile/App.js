@@ -12,8 +12,7 @@ import {
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 
-// TODO: Replace with the deployed site URL before shipping the demo build.
-const SITE_URL = 'https://REPLACE-ME.netlify.app';
+const SITE_URL = 'https://delightful-moss-0894fe210.7.azurestaticapps.net';
 
 // Matches the --gold / --bg accent colors from css/styles.css.
 const COLORS = {

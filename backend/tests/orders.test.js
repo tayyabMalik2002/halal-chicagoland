@@ -70,14 +70,14 @@ describe('POST /api/orders (transactional creation)', () => {
     expect(res.body.data.items.length).toBe(2);
 
     // Verify it is actually persisted in the database, not just in-memory.
-    const [rows] = await pool.query('SELECT * FROM orders WHERE order_id = ?', [res.body.data.order_id]);
+    const { rows } = await pool.query('SELECT * FROM orders WHERE order_id = $1', [res.body.data.order_id]);
     expect(rows.length).toBe(1);
     expect(Number(rows[0].total_amount)).toBeCloseTo(38.97);
   });
 
   it('rolls back the entire order when one line item is invalid (no partial order is created)', async () => {
-    const [beforeOrders] = await pool.query('SELECT COUNT(*) AS count FROM orders');
-    const [beforeItems] = await pool.query('SELECT COUNT(*) AS count FROM order_items');
+    const { rows: beforeOrders } = await pool.query('SELECT COUNT(*) AS count FROM orders');
+    const { rows: beforeItems } = await pool.query('SELECT COUNT(*) AS count FROM order_items');
 
     const res = await request(app)
       .post('/api/orders')
@@ -90,8 +90,8 @@ describe('POST /api/orders (transactional creation)', () => {
       });
     expect(res.status).toBe(400);
 
-    const [afterOrders] = await pool.query('SELECT COUNT(*) AS count FROM orders');
-    const [afterItems] = await pool.query('SELECT COUNT(*) AS count FROM order_items');
+    const { rows: afterOrders } = await pool.query('SELECT COUNT(*) AS count FROM orders');
+    const { rows: afterItems } = await pool.query('SELECT COUNT(*) AS count FROM order_items');
     expect(afterOrders[0].count).toBe(beforeOrders[0].count);
     expect(afterItems[0].count).toBe(beforeItems[0].count);
   });
@@ -158,7 +158,7 @@ describe('DELETE /api/orders/:id', () => {
     const res = await request(app).delete(`/api/orders/${orderId}`);
     expect(res.status).toBe(204);
 
-    const [rows] = await pool.query('SELECT * FROM order_items WHERE order_id = ?', [orderId]);
+    const { rows } = await pool.query('SELECT * FROM order_items WHERE order_id = $1', [orderId]);
     expect(rows.length).toBe(0);
   });
 

@@ -43,15 +43,15 @@ const validateCreateBody = (body) => {
 };
 
 const fetchOrderWithItems = async (orderId) => {
-  const [orderRows] = await pool.query('SELECT * FROM orders WHERE order_id = ?', [orderId]);
+  const { rows: orderRows } = await pool.query('SELECT * FROM orders WHERE order_id = $1', [orderId]);
   if (!orderRows.length) return null;
 
-  const [itemRows] = await pool.query(
+  const { rows: itemRows } = await pool.query(
     `SELECT oi.order_item_id, oi.item_id, mi.name, oi.quantity, oi.unit_price,
             ROUND(oi.quantity * oi.unit_price, 2) AS line_total
      FROM order_items oi
      JOIN menu_items mi ON mi.item_id = oi.item_id
-     WHERE oi.order_id = ?
+     WHERE oi.order_id = $1
      ORDER BY oi.order_item_id ASC`,
     [orderId]
   );
@@ -67,19 +67,19 @@ const listOrders = async (req, res) => {
     if (!/^\d+$/.test(req.query.customer_id)) {
       throw ApiError.badRequest('customer_id query parameter must be a positive integer.');
     }
-    clauses.push('customer_id = ?');
     params.push(Number(req.query.customer_id));
+    clauses.push(`customer_id = $${params.length}`);
   }
   if (req.query.status !== undefined) {
     if (!isOneOf(req.query.status, ORDER_STATUSES)) {
       throw ApiError.badRequest(`status query parameter must be one of: ${ORDER_STATUSES.join(', ')}.`);
     }
-    clauses.push('status = ?');
     params.push(req.query.status);
+    clauses.push(`status = $${params.length}`);
   }
 
   const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
-  const [rows] = await pool.query(
+  const { rows } = await pool.query(
     `SELECT * FROM orders ${where} ORDER BY created_at DESC`,
     params
   );
@@ -96,12 +96,12 @@ const createOrder = async (req, res) => {
   validateCreateBody(req.body);
   const { customer_id, order_type = 'pickup', special_instructions = null, items } = req.body;
 
-  const connection = await pool.getConnection();
+  const client = await pool.connect();
   try {
-    await connection.beginTransaction();
+    await client.query('BEGIN');
 
-    const [customerRows] = await connection.query(
-      'SELECT customer_id FROM customers WHERE customer_id = ? FOR UPDATE',
+    const { rows: customerRows } = await client.query(
+      'SELECT customer_id FROM customers WHERE customer_id = $1 FOR UPDATE',
       [customer_id]
     );
     if (!customerRows.length) {
@@ -109,8 +109,8 @@ const createOrder = async (req, res) => {
     }
 
     const itemIds = items.map((i) => i.item_id);
-    const [menuRows] = await connection.query(
-      `SELECT item_id, price, is_available FROM menu_items WHERE item_id IN (${itemIds.map(() => '?').join(',')}) FOR UPDATE`,
+    const { rows: menuRows } = await client.query(
+      `SELECT item_id, price, is_available FROM menu_items WHERE item_id IN (${itemIds.map((_, i) => `$${i + 1}`).join(',')}) FOR UPDATE`,
       itemIds
     );
     const menuById = new Map(menuRows.map((r) => [r.item_id, r]));
@@ -129,39 +129,44 @@ const createOrder = async (req, res) => {
     }, 0);
     const totalRounded = Math.round(total * 100) / 100;
 
-    const [orderResult] = await connection.query(
+    const { rows: orderRows } = await client.query(
       `INSERT INTO orders (customer_id, order_type, status, total_amount, special_instructions)
-       VALUES (?, ?, 'pending', ?, ?)`,
+       VALUES ($1, $2, 'pending', $3, $4) RETURNING order_id`,
       [customer_id, order_type, totalRounded, special_instructions]
     );
-    const orderId = orderResult.insertId;
+    const orderId = orderRows[0].order_id;
 
-    const values = items.map((item) => [
-      orderId,
-      item.item_id,
-      item.quantity,
-      Number(menuById.get(item.item_id).price),
-    ]);
-    await connection.query(
-      'INSERT INTO order_items (order_id, item_id, quantity, unit_price) VALUES ?',
-      [values]
+    // Build one multi-row VALUES (...),(...),... insert, since pg has no
+    // equivalent to mysql2's "VALUES ?" array-of-arrays shorthand.
+    const insertParams = [];
+    const valuePlaceholders = items
+      .map((item) => {
+        const rowValues = [orderId, item.item_id, item.quantity, Number(menuById.get(item.item_id).price)];
+        insertParams.push(...rowValues);
+        const start = insertParams.length - rowValues.length + 1;
+        return `(${rowValues.map((_, i) => `$${start + i}`).join(',')})`;
+      })
+      .join(',');
+    await client.query(
+      `INSERT INTO order_items (order_id, item_id, quantity, unit_price) VALUES ${valuePlaceholders}`,
+      insertParams
     );
 
-    await connection.commit();
+    await client.query('COMMIT');
 
     const order = await fetchOrderWithItems(orderId);
     res.status(201).json({ data: order });
   } catch (err) {
-    await connection.rollback();
+    await client.query('ROLLBACK');
     throw err;
   } finally {
-    connection.release();
+    client.release();
   }
 };
 
 const updateOrderStatus = async (req, res) => {
   const { id } = req.params;
-  const [existing] = await pool.query('SELECT * FROM orders WHERE order_id = ?', [id]);
+  const { rows: existing } = await pool.query('SELECT * FROM orders WHERE order_id = $1', [id]);
   if (!existing.length) throw ApiError.notFound(`Order ${id} not found.`);
 
   const { status } = req.body;
@@ -179,17 +184,17 @@ const updateOrderStatus = async (req, res) => {
     );
   }
 
-  await pool.query('UPDATE orders SET status = ? WHERE order_id = ?', [status, id]);
+  await pool.query('UPDATE orders SET status = $1 WHERE order_id = $2', [status, id]);
   const order = await fetchOrderWithItems(id);
   res.json({ data: order });
 };
 
 const deleteOrder = async (req, res) => {
   const { id } = req.params;
-  const [existing] = await pool.query('SELECT order_id FROM orders WHERE order_id = ?', [id]);
+  const { rows: existing } = await pool.query('SELECT order_id FROM orders WHERE order_id = $1', [id]);
   if (!existing.length) throw ApiError.notFound(`Order ${id} not found.`);
 
-  await pool.query('DELETE FROM orders WHERE order_id = ?', [id]);
+  await pool.query('DELETE FROM orders WHERE order_id = $1', [id]);
   res.status(204).send();
 };
 

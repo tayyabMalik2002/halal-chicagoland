@@ -30,7 +30,7 @@ const validateBody = (body, { partial = false } = {}) => {
 };
 
 const listCategories = async (req, res) => {
-  const [rows] = await pool.query(
+  const { rows } = await pool.query(
     'SELECT * FROM menu_categories ORDER BY display_order ASC, name ASC'
   );
   res.json({ data: rows });
@@ -38,42 +38,42 @@ const listCategories = async (req, res) => {
 
 const getCategory = async (req, res) => {
   const { id } = req.params;
-  const [rows] = await pool.query('SELECT * FROM menu_categories WHERE category_id = ?', [id]);
+  const { rows } = await pool.query('SELECT * FROM menu_categories WHERE category_id = $1', [id]);
   if (!rows.length) throw ApiError.notFound(`Menu category ${id} not found.`);
   res.json({ data: rows[0] });
 };
 
 const createCategory = async (req, res) => {
   const data = validateBody(req.body);
-  const [result] = await pool.query(
-    'INSERT INTO menu_categories (name, description, display_order) VALUES (?, ?, ?)',
+  const { rows: inserted } = await pool.query(
+    'INSERT INTO menu_categories (name, description, display_order) VALUES ($1, $2, $3) RETURNING category_id',
     [data.name, data.description ?? null, data.display_order ?? 0]
   );
-  const [rows] = await pool.query('SELECT * FROM menu_categories WHERE category_id = ?', [result.insertId]);
+  const { rows } = await pool.query('SELECT * FROM menu_categories WHERE category_id = $1', [inserted[0].category_id]);
   res.status(201).json({ data: rows[0] });
 };
 
 const updateCategory = async (req, res) => {
   const { id } = req.params;
-  const [existing] = await pool.query('SELECT * FROM menu_categories WHERE category_id = ?', [id]);
+  const { rows: existing } = await pool.query('SELECT * FROM menu_categories WHERE category_id = $1', [id]);
   if (!existing.length) throw ApiError.notFound(`Menu category ${id} not found.`);
 
   const data = validateBody(req.body, { partial: true });
   const merged = { ...existing[0], ...data };
   await pool.query(
-    'UPDATE menu_categories SET name = ?, description = ?, display_order = ? WHERE category_id = ?',
+    'UPDATE menu_categories SET name = $1, description = $2, display_order = $3 WHERE category_id = $4',
     [merged.name, merged.description, merged.display_order, id]
   );
-  const [rows] = await pool.query('SELECT * FROM menu_categories WHERE category_id = ?', [id]);
+  const { rows } = await pool.query('SELECT * FROM menu_categories WHERE category_id = $1', [id]);
   res.json({ data: rows[0] });
 };
 
 const deleteCategory = async (req, res) => {
   const { id } = req.params;
-  const [existing] = await pool.query('SELECT * FROM menu_categories WHERE category_id = ?', [id]);
+  const { rows: existing } = await pool.query('SELECT * FROM menu_categories WHERE category_id = $1', [id]);
   if (!existing.length) throw ApiError.notFound(`Menu category ${id} not found.`);
 
-  await pool.query('DELETE FROM menu_categories WHERE category_id = ?', [id]);
+  await pool.query('DELETE FROM menu_categories WHERE category_id = $1', [id]);
   res.status(204).send();
 };
 

@@ -18,18 +18,20 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // MySQL foreign key / constraint errors
-  if (err.code === 'ER_NO_REFERENCED_ROW_2' || err.code === 'ER_NO_REFERENCED_ROW') {
+  // Postgres foreign key violation (SQLSTATE 23503) covers both directions;
+  // distinguish by message since pg uses one code for both cases.
+  if (err.code === '23503') {
+    if (err.detail && err.detail.includes('is still referenced from table')) {
+      return res.status(409).json({
+        error: { message: 'This record cannot be deleted because other records depend on it.' },
+      });
+    }
     return res.status(400).json({
       error: { message: 'Referenced record does not exist (invalid foreign key).' },
     });
   }
-  if (err.code === 'ER_ROW_IS_REFERENCED_2' || err.code === 'ER_ROW_IS_REFERENCED') {
-    return res.status(409).json({
-      error: { message: 'This record cannot be deleted because other records depend on it.' },
-    });
-  }
-  if (err.code === 'ER_DUP_ENTRY') {
+  // Postgres unique violation
+  if (err.code === '23505') {
     return res.status(409).json({
       error: { message: 'A record with this value already exists.' },
     });

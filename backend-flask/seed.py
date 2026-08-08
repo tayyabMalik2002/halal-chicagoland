@@ -3,6 +3,8 @@ in the frontend's js/data.js into the SQLite database via the SQLAlchemy models.
 Run with: python seed.py
 """
 
+from sqlalchemy import text
+
 from app import create_app
 from app.extensions import db
 from app.models import Cuisine, Feature, Hour, Restaurant
@@ -988,6 +990,17 @@ def seed():
             db.session.add(restaurant)
 
         db.session.commit()
+
+        if db.engine.dialect.name == "postgresql":
+            # Explicit ids were assigned above, so the identity sequence
+            # doesn't know about them yet — resync it or the next
+            # auto-generated insert will collide with an existing id.
+            db.session.execute(text(
+                "SELECT setval(pg_get_serial_sequence('restaurants', 'id'), "
+                "COALESCE((SELECT MAX(id) FROM restaurants), 1))"
+            ))
+            db.session.commit()
+
         print(f"Seeded {len(RESTAURANTS_DATA)} restaurants.")
 
 

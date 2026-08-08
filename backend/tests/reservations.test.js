@@ -54,7 +54,7 @@ describe('POST /api/reservations', () => {
     expect(res.status).toBe(201);
     expect(res.body.data.status).toBe('pending');
 
-    const [rows] = await pool.query('SELECT * FROM reservations WHERE reservation_id = ?', [
+    const { rows } = await pool.query('SELECT * FROM reservations WHERE reservation_id = $1', [
       res.body.data.reservation_id,
     ]);
     expect(rows.length).toBe(1);

@@ -47,7 +47,7 @@ const validateBody = (body, { partial = false } = {}) => {
 };
 
 const assertCategoryExists = async (categoryId) => {
-  const [rows] = await pool.query('SELECT category_id FROM menu_categories WHERE category_id = ?', [categoryId]);
+  const { rows } = await pool.query('SELECT category_id FROM menu_categories WHERE category_id = $1', [categoryId]);
   if (!rows.length) throw ApiError.badRequest(`category_id ${categoryId} does not reference an existing menu category.`);
 };
 
@@ -59,19 +59,19 @@ const listItems = async (req, res) => {
     if (!/^\d+$/.test(req.query.category_id)) {
       throw ApiError.badRequest('category_id query parameter must be a positive integer.');
     }
-    clauses.push('category_id = ?');
     params.push(Number(req.query.category_id));
+    clauses.push(`category_id = $${params.length}`);
   }
   if (req.query.available !== undefined) {
     if (!['true', 'false'].includes(req.query.available)) {
       throw ApiError.badRequest('available query parameter must be "true" or "false".');
     }
-    clauses.push('is_available = ?');
-    params.push(req.query.available === 'true' ? 1 : 0);
+    params.push(req.query.available === 'true');
+    clauses.push(`is_available = $${params.length}`);
   }
 
   const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
-  const [rows] = await pool.query(
+  const { rows } = await pool.query(
     `SELECT * FROM menu_items ${where} ORDER BY category_id ASC, name ASC`,
     params
   );
@@ -80,7 +80,7 @@ const listItems = async (req, res) => {
 
 const getItem = async (req, res) => {
   const { id } = req.params;
-  const [rows] = await pool.query('SELECT * FROM menu_items WHERE item_id = ?', [id]);
+  const { rows } = await pool.query('SELECT * FROM menu_items WHERE item_id = $1', [id]);
   if (!rows.length) throw ApiError.notFound(`Menu item ${id} not found.`);
   res.json({ data: rows[0] });
 };
@@ -89,9 +89,9 @@ const createItem = async (req, res) => {
   const data = validateBody(req.body);
   await assertCategoryExists(data.category_id);
 
-  const [result] = await pool.query(
+  const { rows: inserted } = await pool.query(
     `INSERT INTO menu_items (category_id, name, description, price, halal_notes, is_available)
-     VALUES (?, ?, ?, ?, ?, ?)`,
+     VALUES ($1, $2, $3, $4, $5, $6) RETURNING item_id`,
     [
       data.category_id,
       data.name,
@@ -101,13 +101,13 @@ const createItem = async (req, res) => {
       data.is_available ?? true,
     ]
   );
-  const [rows] = await pool.query('SELECT * FROM menu_items WHERE item_id = ?', [result.insertId]);
+  const { rows } = await pool.query('SELECT * FROM menu_items WHERE item_id = $1', [inserted[0].item_id]);
   res.status(201).json({ data: rows[0] });
 };
 
 const updateItem = async (req, res) => {
   const { id } = req.params;
-  const [existing] = await pool.query('SELECT * FROM menu_items WHERE item_id = ?', [id]);
+  const { rows: existing } = await pool.query('SELECT * FROM menu_items WHERE item_id = $1', [id]);
   if (!existing.length) throw ApiError.notFound(`Menu item ${id} not found.`);
 
   const data = validateBody(req.body, { partial: true });
@@ -116,8 +116,8 @@ const updateItem = async (req, res) => {
   const merged = { ...existing[0], ...data };
   await pool.query(
     `UPDATE menu_items
-     SET category_id = ?, name = ?, description = ?, price = ?, halal_notes = ?, is_available = ?
-     WHERE item_id = ?`,
+     SET category_id = $1, name = $2, description = $3, price = $4, halal_notes = $5, is_available = $6
+     WHERE item_id = $7`,
     [
       merged.category_id,
       merged.name,
@@ -128,30 +128,30 @@ const updateItem = async (req, res) => {
       id,
     ]
   );
-  const [rows] = await pool.query('SELECT * FROM menu_items WHERE item_id = ?', [id]);
+  const { rows } = await pool.query('SELECT * FROM menu_items WHERE item_id = $1', [id]);
   res.json({ data: rows[0] });
 };
 
 const updateAvailability = async (req, res) => {
   const { id } = req.params;
-  const [existing] = await pool.query('SELECT * FROM menu_items WHERE item_id = ?', [id]);
+  const { rows: existing } = await pool.query('SELECT * FROM menu_items WHERE item_id = $1', [id]);
   if (!existing.length) throw ApiError.notFound(`Menu item ${id} not found.`);
 
   if (!isBoolean(req.body.is_available)) {
     throw ApiError.badRequest('Validation failed.', ['is_available is required and must be a boolean.']);
   }
 
-  await pool.query('UPDATE menu_items SET is_available = ? WHERE item_id = ?', [req.body.is_available, id]);
-  const [rows] = await pool.query('SELECT * FROM menu_items WHERE item_id = ?', [id]);
+  await pool.query('UPDATE menu_items SET is_available = $1 WHERE item_id = $2', [req.body.is_available, id]);
+  const { rows } = await pool.query('SELECT * FROM menu_items WHERE item_id = $1', [id]);
   res.json({ data: rows[0] });
 };
 
 const deleteItem = async (req, res) => {
   const { id } = req.params;
-  const [existing] = await pool.query('SELECT * FROM menu_items WHERE item_id = ?', [id]);
+  const { rows: existing } = await pool.query('SELECT * FROM menu_items WHERE item_id = $1', [id]);
   if (!existing.length) throw ApiError.notFound(`Menu item ${id} not found.`);
 
-  await pool.query('DELETE FROM menu_items WHERE item_id = ?', [id]);
+  await pool.query('DELETE FROM menu_items WHERE item_id = $1', [id]);
   res.status(204).send();
 };
 

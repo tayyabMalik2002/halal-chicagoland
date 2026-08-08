@@ -14,7 +14,7 @@ const RESTAURANT_COLUMNS = 'restaurant_id, name, address, cuisine_type, source, 
 const logRequest = async (endpoint, restaurantId, responseCode) => {
   try {
     await pool.query(
-      'INSERT INTO analysis_requests (endpoint, restaurant_id, response_code) VALUES (?, ?, ?)',
+      'INSERT INTO analysis_requests (endpoint, restaurant_id, response_code) VALUES ($1, $2, $3)',
       [endpoint, restaurantId || null, responseCode]
     );
   } catch (err) {
@@ -23,41 +23,41 @@ const logRequest = async (endpoint, restaurantId, responseCode) => {
 };
 
 const findRestaurantByName = async (name) => {
-  const [rows] = await pool.query(
-    `SELECT ${RESTAURANT_COLUMNS} FROM restaurants WHERE LOWER(name) = LOWER(?) LIMIT 1`,
+  const { rows } = await pool.query(
+    `SELECT ${RESTAURANT_COLUMNS} FROM restaurants WHERE LOWER(name) = LOWER($1) LIMIT 1`,
     [name]
   );
   return rows[0] || null;
 };
 
 const createRestaurant = async (name, address, cuisineType, source) => {
-  const [result] = await pool.query(
-    'INSERT INTO restaurants (name, address, cuisine_type, source) VALUES (?, ?, ?, ?)',
+  const { rows: inserted } = await pool.query(
+    'INSERT INTO restaurants (name, address, cuisine_type, source) VALUES ($1, $2, $3, $4) RETURNING restaurant_id',
     [name, address, cuisineType, source]
   );
-  const [rows] = await pool.query(`SELECT ${RESTAURANT_COLUMNS} FROM restaurants WHERE restaurant_id = ?`, [
-    result.insertId,
+  const { rows } = await pool.query(`SELECT ${RESTAURANT_COLUMNS} FROM restaurants WHERE restaurant_id = $1`, [
+    inserted[0].restaurant_id,
   ]);
   return rows[0];
 };
 
 const getCompletedAnalysis = async (restaurantId) => {
-  const [analyses] = await pool.query(
+  const { rows: analyses } = await pool.query(
     "SELECT analysis_id, restaurant_id, status, created_at FROM menu_analyses " +
-      "WHERE restaurant_id = ? AND status = 'completed' ORDER BY analysis_id DESC LIMIT 1",
+      "WHERE restaurant_id = $1 AND status = 'completed' ORDER BY analysis_id DESC LIMIT 1",
     [restaurantId]
   );
   if (!analyses.length) return null;
   const analysis = analyses[0];
 
-  const [items] = await pool.query(
+  const { rows: items } = await pool.query(
     'SELECT item_name, classification, reasoning, confidence FROM menu_analysis_items ' +
-      'WHERE analysis_id = ? ORDER BY analysis_item_id ASC',
+      'WHERE analysis_id = $1 ORDER BY analysis_item_id ASC',
     [analysis.analysis_id]
   );
 
-  const [restaurantRows] = await pool.query(
-    `SELECT ${RESTAURANT_COLUMNS} FROM restaurants WHERE restaurant_id = ?`,
+  const { rows: restaurantRows } = await pool.query(
+    `SELECT ${RESTAURANT_COLUMNS} FROM restaurants WHERE restaurant_id = $1`,
     [restaurantId]
   );
 
@@ -83,15 +83,15 @@ const isValidAiResult = (aiResult) =>
 // Shared by both the photo and name-only paths: persists the analysis and
 // its items, logs the request, and assembles the response payload.
 const persistAnalysis = async ({ endpoint, restaurant, items, source, extraFields }) => {
-  const [analysisResult] = await pool.query('INSERT INTO menu_analyses (restaurant_id, status) VALUES (?, ?)', [
-    restaurant ? restaurant.restaurant_id : null,
-    'completed',
-  ]);
-  const analysisId = analysisResult.insertId;
+  const { rows: analysisRows } = await pool.query(
+    'INSERT INTO menu_analyses (restaurant_id, status) VALUES ($1, $2) RETURNING analysis_id',
+    [restaurant ? restaurant.restaurant_id : null, 'completed']
+  );
+  const analysisId = analysisRows[0].analysis_id;
 
   for (const item of items) {
     await pool.query(
-      'INSERT INTO menu_analysis_items (analysis_id, item_name, classification, reasoning, confidence) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO menu_analysis_items (analysis_id, item_name, classification, reasoning, confidence) VALUES ($1, $2, $3, $4, $5)',
       [analysisId, item.item_name, item.classification, item.reasoning || null, item.confidence]
     );
   }

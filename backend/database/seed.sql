@@ -4,8 +4,6 @@
 -- All customer passwords below are bcrypt hashes of: Password123!
 -- ============================================================
 
-USE zabiha_halal_db;
-
 -- ------------------------------------------------------------
 -- customers (5)
 -- ------------------------------------------------------------
@@ -31,28 +29,28 @@ INSERT INTO menu_categories (name, description, display_order) VALUES
 -- ------------------------------------------------------------
 INSERT INTO menu_items (category_id, name, description, price, halal_notes, is_available) VALUES
 -- Appetizers
-(1, 'Vegetable Samosas',        'Crispy pastry filled with spiced potatoes and peas, served with tamarind chutney', 5.99, 'Vegetarian; fried in dedicated halal oil', 1),
-(1, 'Chicken Seekh Kebab Bites','Charcoal-grilled minced chicken skewers with mint chutney',                        8.99, 'Zabiha halal chicken, certified by IFANCA', 1),
-(1, 'Hummus & Pita',            'Creamy chickpea hummus served with warm pita bread',                                6.49, 'Vegetarian', 1),
-(1, 'Falafel Plate',            'Crispy chickpea falafel with tahini sauce and pickled vegetables',                  7.49, 'Vegetarian', 1),
+(1, 'Vegetable Samosas',        'Crispy pastry filled with spiced potatoes and peas, served with tamarind chutney', 5.99, 'Vegetarian; fried in dedicated halal oil', TRUE),
+(1, 'Chicken Seekh Kebab Bites','Charcoal-grilled minced chicken skewers with mint chutney',                        8.99, 'Zabiha halal chicken, certified by IFANCA', TRUE),
+(1, 'Hummus & Pita',            'Creamy chickpea hummus served with warm pita bread',                                6.49, 'Vegetarian', TRUE),
+(1, 'Falafel Plate',            'Crispy chickpea falafel with tahini sauce and pickled vegetables',                  7.49, 'Vegetarian', TRUE),
 -- Grilled Entrees
-(2, 'Chicken Tikka Platter',    'Marinated chicken thigh grilled over charcoal, served with rice and salad',         16.99, 'Zabiha halal chicken, certified by IFANCA', 1),
-(2, 'Beef Seekh Kebab Platter', 'Spiced minced beef skewers grilled over charcoal',                                  17.99, 'Zabiha halal beef, hand-slaughtered', 1),
-(2, 'Lamb Chops',               'Herb-marinated lamb chops char-grilled and served with mint chutney',               22.99, 'Zabiha halal lamb, certified by HMC', 1),
-(2, 'Grilled Whole Fish (Tilapia)', 'Whole tilapia marinated in a spiced masala and charcoal grilled',               19.99, 'Halal - no cross-contamination with non-halal proteins', 1),
+(2, 'Chicken Tikka Platter',    'Marinated chicken thigh grilled over charcoal, served with rice and salad',         16.99, 'Zabiha halal chicken, certified by IFANCA', TRUE),
+(2, 'Beef Seekh Kebab Platter', 'Spiced minced beef skewers grilled over charcoal',                                  17.99, 'Zabiha halal beef, hand-slaughtered', TRUE),
+(2, 'Lamb Chops',               'Herb-marinated lamb chops char-grilled and served with mint chutney',               22.99, 'Zabiha halal lamb, certified by HMC', TRUE),
+(2, 'Grilled Whole Fish (Tilapia)', 'Whole tilapia marinated in a spiced masala and charcoal grilled',               19.99, 'Halal - no cross-contamination with non-halal proteins', TRUE),
 -- Biryani & Rice
-(3, 'Chicken Biryani',          'Basmati rice layered with spiced chicken, fried onions, and herbs',                 14.99, 'Zabiha halal chicken, certified by IFANCA', 1),
-(3, 'Beef Biryani',             'Basmati rice layered with slow-cooked spiced beef',                                 15.99, 'Zabiha halal beef, hand-slaughtered', 1),
-(3, 'Vegetable Biryani',        'Basmati rice layered with mixed vegetables and warm spices',                        12.99, 'Vegetarian', 1),
-(3, 'Lamb Biryani',             'Basmati rice layered with tender, slow-cooked lamb',                                17.99, 'Zabiha halal lamb, certified by HMC', 1),
+(3, 'Chicken Biryani',          'Basmati rice layered with spiced chicken, fried onions, and herbs',                 14.99, 'Zabiha halal chicken, certified by IFANCA', TRUE),
+(3, 'Beef Biryani',             'Basmati rice layered with slow-cooked spiced beef',                                 15.99, 'Zabiha halal beef, hand-slaughtered', TRUE),
+(3, 'Vegetable Biryani',        'Basmati rice layered with mixed vegetables and warm spices',                        12.99, 'Vegetarian', TRUE),
+(3, 'Lamb Biryani',             'Basmati rice layered with tender, slow-cooked lamb',                                17.99, 'Zabiha halal lamb, certified by HMC', TRUE),
 -- Beverages
-(4, 'Mango Lassi',              'Sweet yogurt smoothie blended with mango pulp',                                    4.99, 'Vegetarian', 1),
-(4, 'Rooh Afza',                'Traditional rose-flavored sherbet drink',                                          3.49, 'Vegetarian', 1),
-(4, 'Soft Drink (Can)',         'Assorted canned sodas',                                                            1.99, 'Vegetarian', 1),
-(4, 'Karak Chai',               'Spiced milk tea brewed with cardamom',                                             2.99, 'Vegetarian', 1),
+(4, 'Mango Lassi',              'Sweet yogurt smoothie blended with mango pulp',                                    4.99, 'Vegetarian', TRUE),
+(4, 'Rooh Afza',                'Traditional rose-flavored sherbet drink',                                          3.49, 'Vegetarian', TRUE),
+(4, 'Soft Drink (Can)',         'Assorted canned sodas',                                                            1.99, 'Vegetarian', TRUE),
+(4, 'Karak Chai',               'Spiced milk tea brewed with cardamom',                                             2.99, 'Vegetarian', TRUE),
 -- Desserts
-(5, 'Gulab Jamun (2 pcs)',      'Soft milk-solid dumplings soaked in rose-cardamom syrup',                          3.99, 'Vegetarian', 1),
-(5, 'Kheer',                    'Traditional rice pudding with cardamom, pistachios, and saffron',                  4.49, 'Vegetarian', 1);
+(5, 'Gulab Jamun (2 pcs)',      'Soft milk-solid dumplings soaked in rose-cardamom syrup',                          3.99, 'Vegetarian', TRUE),
+(5, 'Kheer',                    'Traditional rice pudding with cardamom, pistachios, and saffron',                  4.49, 'Vegetarian', TRUE);
 
 -- ------------------------------------------------------------
 -- orders (6) + order_items

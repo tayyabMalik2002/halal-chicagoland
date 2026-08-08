@@ -2,12 +2,18 @@
    Thin fetch wrapper around the Flask backend (backend-flask/).
    Requires the API to be running at API_BASE. ─────────────────── */
 
-const API_BASE = "http://127.0.0.1:5001/api/v1";
+const IS_LOCAL = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+
+const API_BASE = IS_LOCAL
+  ? "http://127.0.0.1:5001/api/v1"
+  : "https://flask-api.calmisland-a546bf49.centralus.azurecontainerapps.io/api/v1";
 
 /* ─── AI Menu Analyzer client ─────────────────────────────────
    Separate backend: the Express API (backend/), not the Flask
    directory API above. ────────────────────────────────────── */
-const MENU_ANALYZER_API_BASE = "http://localhost:3000/api";
+const MENU_ANALYZER_API_BASE = IS_LOCAL
+  ? "http://localhost:3000/api"
+  : "https://express-api.calmisland-a546bf49.centralus.azurecontainerapps.io/api";
 
 async function apiFetch(path, params) {
   const url = new URL(API_BASE + path);

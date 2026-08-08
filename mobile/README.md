@@ -6,14 +6,15 @@ app store build.
 
 ## Before you run it
 
-Open [`App.js`](./App.js) and set `SITE_URL` at the top of the file to the
-deployed site's URL (e.g. your Netlify URL). It ships with a placeholder:
+`SITE_URL` at the top of [`App.js`](./App.js) already points at the deployed
+site:
 
 ```js
-const SITE_URL = 'https://REPLACE-ME.netlify.app';
+const SITE_URL = 'https://delightful-moss-0894fe210.7.azurestaticapps.net';
 ```
 
-The app will not load anything useful until this is set.
+If the site gets redeployed to a different URL later, update this constant
+to match.
 
 ## Run instructions
 

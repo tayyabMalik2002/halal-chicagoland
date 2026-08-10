@@ -37,6 +37,16 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
+  // express.json()/body-parser errors (malformed JSON body, payload too
+  // large, wrong content-type, etc.) set err.status/err.expose themselves
+  // via the `http-errors` package — expose is only true for 4xx, so this is
+  // always safe to forward to the client as-is, unlike a raw stack trace.
+  if (err.status && err.status < 500 && err.expose) {
+    return res.status(err.status).json({
+      error: { message: err.message },
+    });
+  }
+
   console.error(err);
   return res.status(500).json({
     error: { message: 'Internal server error.' },

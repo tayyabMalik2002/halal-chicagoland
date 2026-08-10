@@ -66,6 +66,15 @@ describe('POST /api/menu-categories', () => {
       .send({ name: 'Appetizers' });
     expect(res.status).toBe(409);
   });
+
+  it('rejects a malformed (syntactically invalid) JSON body with 400, not 500', async () => {
+    const res = await request(app)
+      .post('/api/menu-categories')
+      .set('Content-Type', 'application/json')
+      .send('{"name": "Bad JSON"'); // deliberately unterminated
+    expect(res.status).toBe(400);
+    expect(res.body.error.message).toBeTruthy();
+  });
 });
 
 describe('PUT /api/menu-categories/:id', () => {

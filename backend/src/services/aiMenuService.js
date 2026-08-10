@@ -2,7 +2,12 @@ const Anthropic = require('@anthropic-ai/sdk');
 
 const MODEL = 'claude-sonnet-4-6';
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// The SDK's default timeout is 10 minutes, which would leave a client
+// request (and the browser waiting on it) hanging far too long if the
+// upstream API stalls. 30s is generous for a single vision+text call while
+// still failing fast enough to hit the existing 502 fallback in
+// menuAnalysisController.js instead of tying up the connection.
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, timeout: 30_000 });
 
 // Dev/demo fallback: with no key configured, return canned responses instead of
 // calling the real API. Excludes NODE_ENV=test since the Jest suite mocks the

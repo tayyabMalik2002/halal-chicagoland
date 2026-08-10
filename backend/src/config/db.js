@@ -44,4 +44,12 @@ const pool = new Pool({
   max: Number(process.env.DB_CONNECTION_LIMIT) || 10,
 });
 
+// pg.Pool is an EventEmitter; a backend error on an idle pooled client (e.g.
+// the DB restarting or a network blip) emits 'error' asynchronously outside
+// any request's try/catch. Without a listener here, that's an uncaught
+// exception that crashes the whole process instead of just that connection.
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle Postgres client:', err);
+});
+
 module.exports = pool;

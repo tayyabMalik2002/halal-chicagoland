@@ -40,6 +40,15 @@ async function openModal(id) {
     r = await fetchRestaurant(id);
   } catch (err) {
     console.error("Failed to load restaurant details:", err);
+    modalInner.innerHTML = `
+      <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+      <div class="modal-body">
+        <h2 class="modal-name">Couldn't load this restaurant</h2>
+        <p class="modal-desc">${err.message || "Something went wrong. Please try again."}</p>
+      </div>`;
+    document.getElementById("modal-close").addEventListener("click", closeModal);
+    modalOverlay.classList.add("open");
+    document.body.style.overflow = "hidden";
     return;
   }
 

@@ -1,0 +1,164 @@
+PASS tests/reports.test.js
+  GET /api/reports/daily-totals
+    ✓ returns order counts and revenue grouped by day, excluding cancelled orders from revenue (14 ms)
+    ✓ returns a single day total when a date is provided (3 ms)
+    ✓ returns zeroed totals for a date with no orders (1 ms)
+    ✓ rejects a malformed date query parameter (1 ms)
+  GET /api/reports/popular-items
+    ✓ returns the top items ranked by quantity ordered (3 ms)
+    ✓ respects a custom limit (1 ms)
+    ✓ rejects a non-positive-integer limit (1 ms)
+
+PASS tests/customers.test.js
+  GET /api/customers
+    ✓ returns all seeded customers without password hashes (5 ms)
+  GET /api/customers/:id
+    ✓ returns a single customer (1 ms)
+    ✓ returns 404 for a customer that does not exist (1 ms)
+  POST /api/customers (register)
+    ✓ registers a new customer with a hashed password (52 ms)
+    ✓ rejects registration with a duplicate email (1 ms)
+    ✓ rejects registration with an invalid email
+    ✓ rejects registration with a password shorter than 8 characters (1 ms)
+  PUT /api/customers/:id
+    ✓ updates a customer profile field (3 ms)
+    ✓ rejects updating to an email already used by another customer (1 ms)
+    ✓ returns 404 when updating a customer that does not exist (1 ms)
+  DELETE /api/customers/:id
+    ✓ deletes a customer with no orders or reservations (47 ms)
+    ✓ rejects deleting a customer who has existing orders (1 ms)
+    ✓ returns 404 when deleting a customer that does not exist (5 ms)
+
+  console.error
+    Failed to parse AI response as JSON. Raw response: Sure, here is my analysis of the menu: not actually JSON.
+
+      89 |     return JSON.parse(cleaned);
+      90 |   } catch (err) {
+    > 91 |     console.error('Failed to parse AI response as JSON. Raw response:', rawText);
+         |             ^
+      92 |     throw new Error('AI response was not valid JSON.');
+      93 |   }
+      94 | };
+
+      at error (src/services/aiMenuService.js:91:13)
+      at Object.parseJsonResponse [as analyzeMenuImage] (src/services/aiMenuService.js:149:10)
+      at analyzeFromPhoto (src/controllers/menuAnalysisController.js:118:16)
+
+PASS tests/menuAnalysis.test.js
+  POST /api/menu-analysis
+    ✓ analyzes a menu photo with no restaurant_name (happy path, single AI call) (11 ms)
+    ✓ returns a cached analysis on a second request for the same restaurant, without calling the AI again (6 ms)
+    ✓ creates a restaurant via web search when restaurant_name is not already in the database (3 ms)
+    ✓ rejects a request with neither an image nor a restaurant_name (1 ms)
+    ✓ rejects an unsupported image mime type (1 ms)
+    ✓ rejects an image over the 10MB size limit (9 ms)
+    ✓ returns 422 when the AI reports the image is not a menu (1 ms)
+    ✓ returns 502 when the AI response is not valid JSON (12 ms)
+    ✓ returns 502 when the Anthropic API call itself fails (1 ms)
+  POST /api/menu-analysis — name-only search (no image)
+    ✓ finds a menu via web search with a single AI call (4 ms)
+    ✓ returns a cached analysis on a second name-only request, without calling the AI again (4 ms)
+    ✓ returns 404 when the AI cannot find the restaurant or its menu (1 ms)
+  GET /api/restaurants/:id/menu-analysis
+    ✓ returns the most recent completed analysis for a restaurant (4 ms)
+    ✓ returns 404 for a restaurant with no completed analysis (1 ms)
+    ✓ returns 404 for a restaurant that does not exist (1 ms)
+    ✓ returns 400 for a malformed restaurant id
+
+PASS tests/orders.test.js
+  GET /api/orders
+    ✓ returns all seeded orders (6 ms)
+    ✓ filters by customer_id (2 ms)
+    ✓ filters by status (1 ms)
+    ✓ rejects an invalid status filter (1 ms)
+  GET /api/orders/:id
+    ✓ returns an order with its line items joined to menu item names (2 ms)
+    ✓ returns 404 for an order that does not exist
+  POST /api/orders (transactional creation)
+    ✓ creates an order, inserts line items, and computes the total from current menu prices (9 ms)
+    ✓ rolls back the entire order when one line item is invalid (no partial order is created) (3 ms)
+    ✓ rejects an order for an unavailable menu item (5 ms)
+    ✓ rejects an order for a customer that does not exist (2 ms)
+    ✓ rejects an order with an empty items array
+  PATCH /api/orders/:id/status
+    ✓ advances a pending order to confirmed (2 ms)
+    ✓ rejects an illegal status transition (skipping steps) (1 ms)
+    ✓ rejects an unknown status value (1 ms)
+    ✓ returns 404 when updating status for an order that does not exist (1 ms)
+  DELETE /api/orders/:id
+    ✓ deletes an order and cascades to its order_items (4 ms)
+    ✓ returns 404 when deleting an order that does not exist
+
+PASS tests/menuCategories.test.js
+  GET /api/menu-categories
+    ✓ returns all seeded categories ordered by display_order (6 ms)
+  GET /api/menu-categories/:id
+    ✓ returns a single category (1 ms)
+    ✓ returns 404 for a category that does not exist (1 ms)
+    ✓ returns 400 for a non-numeric id (1 ms)
+  POST /api/menu-categories
+    ✓ creates a new category (3 ms)
+    ✓ rejects a request missing the required name field
+    ✓ rejects a duplicate category name (1 ms)
+    ✓ rejects a malformed (syntactically invalid) JSON body with 400, not 500 (2 ms)
+  PUT /api/menu-categories/:id
+    ✓ updates an existing category (5 ms)
+    ✓ returns 404 when updating a category that does not exist (1 ms)
+  DELETE /api/menu-categories/:id
+    ✓ deletes a category with no menu items (2 ms)
+    ✓ rejects deleting a category that still has menu items (1 ms)
+    ✓ returns 404 when deleting a category that does not exist (7 ms)
+
+PASS tests/menuItems.test.js
+  GET /api/menu-items
+    ✓ returns all seeded menu items (6 ms)
+    ✓ filters by category_id (1 ms)
+    ✓ filters by availability (2 ms)
+    ✓ rejects an invalid available query value
+  GET /api/menu-items/:id
+    ✓ returns a single menu item (1 ms)
+    ✓ returns 404 for a menu item that does not exist (1 ms)
+  POST /api/menu-items
+    ✓ creates a new menu item (4 ms)
+    ✓ rejects a negative price
+    ✓ rejects a category_id that does not exist (1 ms)
+  PUT /api/menu-items/:id
+    ✓ updates a menu item price (2 ms)
+    ✓ returns 404 when updating a menu item that does not exist (1 ms)
+  PATCH /api/menu-items/:id/availability
+    ✓ marks a menu item unavailable (2 ms)
+    ✓ rejects a non-boolean is_available value
+  DELETE /api/menu-items/:id
+    ✓ deletes a menu item that has no orders (3 ms)
+    ✓ rejects deleting a menu item referenced by an existing order (1 ms)
+    ✓ returns 404 when deleting a menu item that does not exist (5 ms)
+
+PASS tests/reservations.test.js
+  GET /api/reservations
+    ✓ returns all seeded reservations (6 ms)
+    ✓ filters by status (2 ms)
+    ✓ rejects an invalid date filter
+  GET /api/reservations/:id
+    ✓ returns a single reservation (1 ms)
+    ✓ returns 404 for a reservation that does not exist (1 ms)
+  POST /api/reservations
+    ✓ creates a reservation with default status pending (4 ms)
+    ✓ rejects a reservation with a malformed date
+    ✓ rejects a reservation with a zero party size (1 ms)
+    ✓ rejects a reservation for a customer that does not exist
+  PUT /api/reservations/:id
+    ✓ updates party size and status (2 ms)
+    ✓ returns 404 when updating a reservation that does not exist (1 ms)
+  PATCH /api/reservations/:id/cancel
+    ✓ cancels a pending reservation (1 ms)
+    ✓ rejects cancelling a reservation that is already cancelled (1 ms)
+    ✓ returns 404 when cancelling a reservation that does not exist (1 ms)
+  DELETE /api/reservations/:id
+    ✓ deletes a reservation (2 ms)
+    ✓ returns 404 when deleting a reservation that does not exist (1 ms)
+
+Test Suites: 7 passed, 7 total
+Tests:       98 passed, 98 total
+Snapshots:   0 total
+Time:        1.054 s, estimated 2 s
+Ran all test suites.

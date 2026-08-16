@@ -3,42 +3,50 @@
 
 :root {
   /* ── Design system: colors ──────────────────────────────────
-     Exactly five palette colors, plus two neutral greys. Gold is
-     reserved for accents/interactive elements; light gold is the
-     primary reading color on dark surfaces. No other raw hex
-     values should appear anywhere else in this file. ─────────── */
-  --bg:          #121212;
-  --panel:       #1A1A1A;
+     Warm cream background with white panels, near-black "ink" as
+     the primary reading color, and gold reserved for accents. Gold
+     needs two tones: --gold (bright, ~#C9A227) for solid fills like
+     buttons/badges/pins where black text sits on top, and
+     --gold-text (deeper, ~#7A5C15) for anywhere gold appears AS
+     text/icons — the bright fill tone fails WCAG AA badly against
+     this light background (2.2:1), the deeper tone passes (5.5:1+).
+     No other raw hex values should appear elsewhere in this file. */
+  --bg:          #F7F1E3;
+  --bg-rgb:      247, 241, 227;
+  --panel:       #FFFFFF;
+  --ink:         #1C1815; /* primary text — warm near-black, not pure #000 */
   --gold:        #C9A227;
   --gold-rgb:    201, 162, 39;
-  --gold-light:  #E8D89A;
-  --grey-1:      #9E9E9E; /* readable secondary/tertiary text — AA-safe on bg & panel */
-  --grey-2:      #2A2A2A; /* borders, dividers, hover surfaces — decorative only, not text */
+  --gold-text:   #7A5C15;
+  --gold-text-rgb: 122, 92, 21;
+  --gold-hover:  #DEC26E; /* lighter gold for hover states on gold-filled buttons */
+  --grey-1:      #5C5140; /* readable secondary/tertiary text — AA-safe on bg & panel */
+  --grey-2:      #E3DAC5; /* borders, dividers — decorative only, not text */
 
   /* Semantic aliases built from the palette above */
-  --text-1:      var(--gold-light);
+  --text-1:      var(--ink);
   --text-2:      var(--grey-1);
   --border:      var(--grey-2);
   --border-hover: rgba(var(--gold-rgb), 0.45);
-  --surface-hover: #222222;
+  --surface-hover: #F0E9D6;
 
   /* Functional (non-decorative) status colors: form errors, closed
      hours, "you are here" map pin, and the AI menu analyzer's
      safe/caution/doubtful/unsuitable classification. These carry
      meaning that grayscale + gold cannot express and are never
-     used decoratively. */
-  --status-safe:       #22C55E;
-  --status-safe-rgb:    34, 197, 94;
-  --status-caution:    #EAB308;
-  --status-caution-rgb: 234, 179, 8;
-  --status-warning:    #F97316;
-  --status-warning-rgb: 249, 115, 22;
-  /* Lighter than a typical error red — the usual #EF4444 fails 4.5:1
-     against its own translucent tint background (used below in the menu
-     analyzer's "Not Suitable" group header). */
-  --status-danger:     #FB7185;
-  --status-danger-rgb:  251, 113, 133;
-  --status-info:       #2563EB;
+     used decoratively. Deeper/darker than the dark-theme values
+     these replaced — the brighter shades tuned for a black
+     background (e.g. #FB7185) fail badly here (~2.4:1); these pass
+     4.5:1 both plain and against their own translucent tint. */
+  --status-safe:       #166534;
+  --status-safe-rgb:    22, 101, 52;
+  --status-caution:    #854D0E;
+  --status-caution-rgb: 133, 77, 14;
+  --status-warning:    #9A3412;
+  --status-warning-rgb: 154, 52, 18;
+  --status-danger:     #B91C1C;
+  --status-danger-rgb:  185, 28, 28;
+  --status-info:       #2563EB; /* unchanged — a filled map-pin shape, not text */
 
   /* ── Design system: spacing scale — 8 / 16 / 24 / 48px only ─── */
   --space-1: 0.5rem;   /* 8px */
@@ -81,7 +89,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(18,18,18,0.95);
+  background: rgba(var(--bg-rgb), 0.95);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
   padding: 0 var(--space-3);
@@ -115,18 +123,18 @@ button { font-family: inherit; cursor: pointer; border: none; }
   height: 36px;
   border-radius: var(--radius-sm);
   background: var(--gold);
-  color: #000;
+  color: var(--ink);
   font-size: var(--text-base);
   flex-shrink: 0;
 }
 
-.logo-text span { color: var(--gold); }
+.logo-text span { color: var(--gold-text); }
 
 .header-badge {
   font-size: var(--text-xs);
   font-weight: 700;
   background: transparent;
-  color: var(--gold);
+  color: var(--gold-text);
   border: 1px solid rgba(var(--gold-rgb), 0.4);
   border-radius: 99px;
   padding: 2px var(--space-2);
@@ -153,7 +161,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .nav-link:hover { color: var(--text-1); background: var(--panel); }
 
 .nav-link.active {
-  color: var(--gold);
+  color: var(--gold-text);
   background: rgba(var(--gold-rgb), 0.1);
 }
 
@@ -175,7 +183,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--gold-text);
   background: rgba(var(--gold-rgb), 0.1);
   border: 1px solid rgba(var(--gold-rgb), 0.25);
   border-radius: 99px;
@@ -196,7 +204,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
 
 .hero h1 em {
   font-style: normal;
-  color: var(--gold);
+  color: var(--gold-text);
 }
 
 .hero-sub {
@@ -252,7 +260,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   height: 22px;
   border-radius: 50%;
   background: var(--grey-1);
-  color: var(--bg);
+  color: var(--panel);
   display: none;
   align-items: center;
   justify-content: center;
@@ -261,7 +269,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   transition: background var(--transition);
 }
 
-.search-clear:hover { background: var(--gold-light); }
+.search-clear:hover { background: var(--gold-hover); color: var(--ink); }
 .search-clear.visible { display: flex; }
 
 /* ─── Filters Bar ───────────────────────────────────────────────── */
@@ -293,7 +301,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   color: var(--text-1);
   cursor: pointer;
   outline: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239E9E9E' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235C5140' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right var(--space-1) center;
   transition: border-color var(--transition);
@@ -310,7 +318,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   white-space: nowrap;
 }
 
-.result-count strong { color: var(--gold); }
+.result-count strong { color: var(--gold-text); }
 
 .btn-clear {
   font-size: var(--text-xs);
@@ -391,7 +399,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   font-family: var(--font-serif);
   font-size: calc(var(--logo-size) * 0.42);
   font-weight: 700;
-  color: var(--gold);
+  color: var(--gold-text);
   line-height: 1;
 }
 
@@ -448,7 +456,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
 
 .card-meta-dot { color: var(--grey-1); }
 
-.price { color: var(--gold); font-weight: 600; }
+.price { color: var(--gold-text); font-weight: 600; }
 
 /* Stars */
 .stars {
@@ -466,11 +474,11 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .star {
   width: 13px;
   height: 13px;
-  color: var(--gold);
+  color: var(--gold-text);
 }
 
-.star.empty { color: var(--grey-2); }
-.star.half { color: var(--gold); opacity: 0.5; }
+.star.empty { color: var(--grey-1); opacity: 0.4; }
+.star.half { color: var(--gold-text); opacity: 0.5; }
 
 .rating-num {
   font-size: var(--text-sm);
@@ -496,7 +504,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   color: var(--text-2);
 }
 
-.card-info-row svg { width: 13px; height: 13px; color: var(--gold); flex-shrink: 0; }
+.card-info-row svg { width: 13px; height: 13px; color: var(--gold-text); flex-shrink: 0; }
 
 /* Optional plain-text service tags (per restaurant detail view use;
    deliberately not bordered pills — see .modal-tag for the styled
@@ -593,7 +601,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   gap: 6px;
   font-size: var(--text-xs);
   font-weight: 700;
-  color: var(--gold);
+  color: var(--gold-text);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -612,7 +620,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   border-bottom: 1px solid var(--border);
 }
 
-.modal-meta .price { color: var(--gold); font-weight: 700; font-size: var(--text-base); }
+.modal-meta .price { color: var(--gold-text); font-weight: 700; font-size: var(--text-base); }
 
 .modal-desc {
   font-size: var(--text-sm);
@@ -626,7 +634,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--gold-text);
   margin-bottom: var(--space-2);
 }
 
@@ -650,7 +658,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .modal-info-item svg {
   width: 16px;
   height: 16px;
-  color: var(--gold);
+  color: var(--gold-text);
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -671,7 +679,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
 }
 
 .modal-info-value a {
-  color: var(--gold);
+  color: var(--gold-text);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -732,7 +740,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   align-items: center;
   gap: var(--space-1);
   background: var(--gold);
-  color: #000;
+  color: var(--ink);
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-3);
   font-size: var(--text-sm);
@@ -742,7 +750,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   text-decoration: none;
 }
 
-.btn-maps:hover { background: var(--gold-light); }
+.btn-maps:hover { background: var(--gold-hover); }
 .btn-maps svg { width: 16px; height: 16px; }
 
 /* ─── Map Page ──────────────────────────────────────────────────── */
@@ -762,7 +770,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   color: var(--text-1);
   margin-bottom: var(--space-1);
 }
-.map-hero-inner h1 em { font-style: normal; color: var(--gold); }
+.map-hero-inner h1 em { font-style: normal; color: var(--gold-text); }
 .map-hero-inner .hero-sub { margin-bottom: var(--space-3); }
 
 .btn-locate {
@@ -770,7 +778,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   align-items: center;
   gap: var(--space-1);
   background: var(--gold);
-  color: #000;
+  color: var(--ink);
   border-radius: 99px;
   padding: var(--space-2) var(--space-3);
   font-size: var(--text-sm);
@@ -778,7 +786,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   transition: background var(--transition), opacity var(--transition);
 }
 
-.btn-locate:hover { background: var(--gold-light); }
+.btn-locate:hover { background: var(--gold-hover); }
 .btn-locate:disabled { opacity: 0.65; cursor: default; }
 .btn-locate svg { width: 16px; height: 16px; }
 
@@ -871,7 +879,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .map-list-distance {
   font-size: var(--text-xs);
   font-weight: 700;
-  color: var(--gold);
+  color: var(--gold-text);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -887,13 +895,13 @@ button { font-family: inherit; cursor: pointer; border: none; }
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-  border: 2px solid #000;
+  border: 2px solid var(--ink);
 }
 
 .map-pin span {
   transform: rotate(45deg);
   font-size: var(--text-sm);
-  color: #000;
+  color: var(--ink);
 }
 
 /* Blue is a deliberate, deviation from the gold/grey palette: it's
@@ -922,13 +930,13 @@ button { font-family: inherit; cursor: pointer; border: none; }
   margin-top: var(--space-1);
   width: 100%;
   background: var(--gold);
-  color: #000;
+  color: var(--ink);
   font-weight: 700;
   font-size: var(--text-xs);
   border-radius: var(--radius-sm);
   padding: var(--space-1);
 }
-.map-popup-btn:hover { background: var(--gold-light); }
+.map-popup-btn:hover { background: var(--gold-hover); }
 
 .leaflet-popup-content-wrapper {
   background: var(--panel);
@@ -958,7 +966,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   margin-bottom: var(--space-1);
 }
 
-.analyzer-hero-inner h1 em { font-style: normal; color: var(--gold); }
+.analyzer-hero-inner h1 em { font-style: normal; color: var(--gold-text); }
 .analyzer-hero-inner .hero-sub { margin-bottom: 0; }
 
 .analyzer-main {
@@ -994,7 +1002,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .analyzer-tab:hover { color: var(--text-1); background: var(--surface-hover); }
 
 .analyzer-tab.active {
-  color: var(--gold);
+  color: var(--gold-text);
   border-bottom-color: var(--gold);
   background: rgba(var(--gold-rgb), 0.06);
 }
@@ -1102,7 +1110,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   width: 100%;
   margin-top: var(--space-2);
   background: var(--gold);
-  color: #000;
+  color: var(--ink);
   font-size: var(--text-base);
   font-weight: 700;
   border-radius: var(--radius-sm);
@@ -1110,7 +1118,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   transition: background var(--transition), opacity var(--transition);
 }
 
-.btn-analyze:hover:not(:disabled) { background: var(--gold-light); }
+.btn-analyze:hover:not(:disabled) { background: var(--gold-hover); }
 .btn-analyze:disabled { opacity: 0.45; cursor: default; }
 
 /* Results */
@@ -1143,7 +1151,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   font-size: var(--text-xs);
   font-weight: 700;
   letter-spacing: 0.02em;
-  color: var(--gold-light);
+  color: var(--gold-text);
   background: rgba(var(--gold-rgb), 0.1);
   border: 1px dashed rgba(var(--gold-rgb), 0.4);
   border-radius: 99px;
@@ -1169,7 +1177,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   margin-bottom: var(--space-2);
 }
 
-.analyzer-source-note a { color: var(--gold); text-decoration: underline; text-underline-offset: 2px; }
+.analyzer-source-note a { color: var(--gold-text); text-decoration: underline; text-underline-offset: 2px; }
 
 .analyzer-overall-note {
   font-size: var(--text-sm);
@@ -1257,7 +1265,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
 /* Neutral gold→gray scale, deliberately distinct from the green/yellow/orange/red
    classification colors above — a "high confidence" badge shouldn't read as "safe"
    on a Not Suitable item. */
-.confidence-high { background: rgba(var(--gold-rgb), 0.18); color: var(--gold-light); }
+.confidence-high { background: rgba(var(--gold-rgb), 0.18); color: var(--gold-text); }
 .confidence-medium { background: rgba(158,158,158,0.15); color: var(--text-2); }
 .confidence-low { background: rgba(158,158,158,0.1); color: var(--grey-1); }
 
@@ -1302,7 +1310,7 @@ footer {
   margin-bottom: var(--space-2);
 }
 
-.footer-logo span { color: var(--gold); }
+.footer-logo span { color: var(--gold-text); }
 
 .footer-disclaimer {
   font-size: var(--text-sm);
@@ -1319,8 +1327,8 @@ footer {
 /* ─── Scrollbar ─────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--grey-2); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: var(--grey-1); }
+::-webkit-scrollbar-thumb { background: var(--grey-1); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink); }
 
 /* ─── Responsive ────────────────────────────────────────────────── */
 @media (max-width: 768px) {

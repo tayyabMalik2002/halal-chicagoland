@@ -15,8 +15,16 @@ hotlinked from the frontend), normalized to PNG. The resulting logoUrl is
 written back into seed.py's RESTAURANTS_DATA so the next `python seed.py`
 loads it into the database.
 
+Some sites block plain HTTP libraries (a bare `requests.get` gets a 403)
+even though the same page loads fine in a real browser. When the fast path
+fails, this script falls back to rendering the page with a real (headless)
+Chromium via Playwright, which gets past that class of block. The favicon
+asset itself is still downloaded with `requests` afterward — sites that
+gate the HTML rarely apply the same protection to a static icon file.
+
 Usage:
     pip install -r scripts/requirements.txt
+    playwright install chromium
     python scripts/fetch_logos.py
 """
 import io
@@ -28,6 +36,7 @@ from urllib.parse import urljoin
 import requests
 from bs4 import BeautifulSoup
 from PIL import Image
+from playwright.sync_api import sync_playwright
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = SCRIPT_DIR.parent
@@ -44,6 +53,7 @@ HEADERS = {
     )
 }
 REQUEST_TIMEOUT = 10
+PLAYWRIGHT_TIMEOUT_MS = 20000
 MIN_LOGO_DIMENSION = 48  # reject tiny generic favicons — not a usable "logo"
 
 
@@ -87,6 +97,21 @@ def find_icon_candidates(base_url, html):
     return candidates
 
 
+def fetch_html_via_browser(url, browser):
+    """Renders `url` in a real headless browser and returns (final_url, html).
+    Used only as a fallback when a plain `requests.get` gets blocked (e.g. a
+    403 from bot-detection WAFs like Cloudflare that a bare HTTP client trips
+    but a real browser fingerprint does not)."""
+    page = browser.new_page(user_agent=HEADERS["User-Agent"])
+    try:
+        response = page.goto(url, timeout=PLAYWRIGHT_TIMEOUT_MS, wait_until="load")
+        if response is None:
+            raise RuntimeError("no response")
+        return page.url, page.content()
+    finally:
+        page.close()
+
+
 def download_image(url):
     resp = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
     resp.raise_for_status()
@@ -99,13 +124,11 @@ def download_image(url):
     return resp.content
 
 
-def best_logo_for(website):
-    """Fetches `website`, ranks icon candidates, and returns the first one
-    that downloads as a real image with a shortest side >= MIN_LOGO_DIMENSION.
-    Returns a PIL Image, or None if nothing usable was found."""
-    resp = requests.get(website, headers=HEADERS, timeout=REQUEST_TIMEOUT)
-    resp.raise_for_status()
-    candidates = find_icon_candidates(resp.url, resp.text)
+def best_image_from_html(base_url, html):
+    """Ranks icon candidates found in `html` and returns the first one that
+    downloads as a real image with a shortest side >= MIN_LOGO_DIMENSION, or
+    None if nothing on this page qualifies."""
+    candidates = find_icon_candidates(base_url, html)
 
     for _priority, _size, icon_url in candidates:
         try:
@@ -130,6 +153,30 @@ def best_logo_for(website):
             return img
 
     return None
+
+
+def best_logo_for(website, browser=None):
+    """Finds the best logo image for `website`. Tries a plain `requests.get`
+    first (fast); if that raises OR succeeds but turns up no qualifying
+    icon, and a Playwright `browser` was passed in, retries by rendering the
+    page in a real headless browser — the fallback for sites whose bot
+    protection blocks bare HTTP clients (a 403) but not real browser
+    traffic, or that inject their favicon tag via JavaScript. Returns a PIL
+    Image, or None if nothing usable was found either way."""
+    try:
+        resp = requests.get(website, headers=HEADERS, timeout=REQUEST_TIMEOUT)
+        resp.raise_for_status()
+        img = best_image_from_html(resp.url, resp.text)
+        if img is not None:
+            return img
+    except Exception:
+        pass
+
+    if browser is None:
+        return None
+
+    base_url, html = fetch_html_via_browser(website, browser)
+    return best_image_from_html(base_url, html)
 
 
 def write_seed_file():
@@ -160,32 +207,37 @@ def main():
     resolved = []
     needs_manual = []
 
-    for entry in RESTAURANTS_DATA:
-        name = entry["name"]
-        website = entry.get("website")
-
-        if not website:
-            entry["logoUrl"] = None
-            needs_manual.append((name, "no website on file, and Google Places isn't integrated"))
-            continue
-
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
         try:
-            img = best_logo_for(website)
-        except Exception as exc:
-            entry["logoUrl"] = None
-            needs_manual.append((name, f"fetch failed ({exc})"))
-            continue
+            for entry in RESTAURANTS_DATA:
+                name = entry["name"]
+                website = entry.get("website")
 
-        if img is None:
-            entry["logoUrl"] = None
-            needs_manual.append((name, f"no icon >= {MIN_LOGO_DIMENSION}px found on site"))
-            continue
+                if not website:
+                    entry["logoUrl"] = None
+                    needs_manual.append((name, "no website on file, and Google Places isn't integrated"))
+                    continue
 
-        slug = slugify(name)
-        dest = LOGO_DIR / f"{slug}.png"
-        img.convert("RGBA").save(dest, "PNG")
-        entry["logoUrl"] = f"logos/{slug}.png"
-        resolved.append((name, entry["logoUrl"], img.size))
+                try:
+                    img = best_logo_for(website, browser=browser)
+                except Exception as exc:
+                    entry["logoUrl"] = None
+                    needs_manual.append((name, f"fetch failed ({exc})"))
+                    continue
+
+                if img is None:
+                    entry["logoUrl"] = None
+                    needs_manual.append((name, f"no icon >= {MIN_LOGO_DIMENSION}px found on site (tried direct fetch + browser render)"))
+                    continue
+
+                slug = slugify(name)
+                dest = LOGO_DIR / f"{slug}.png"
+                img.convert("RGBA").save(dest, "PNG")
+                entry["logoUrl"] = f"logos/{slug}.png"
+                resolved.append((name, entry["logoUrl"], img.size))
+        finally:
+            browser.close()
 
     write_seed_file()
 

@@ -79,7 +79,7 @@ RESTAURANTS_DATA = [
         "mapsQuery": "Sabri+Nihari+Chicago+IL",
         "lat": 41.9979, "lng": -87.6875,
         "website": "https://sabrinihari.com/",
-        "logoUrl": None,
+        "logoUrl": "logos/sabri-nihari.png",
     },
     {
         "id": 4,
@@ -685,7 +685,7 @@ RESTAURANTS_DATA = [
         "mapsQuery": "Hello+Shawarma+Touhy+Ave+Niles+IL",
         "lat": 42.0122, "lng": -87.8090,
         "website": "https://helloshawarmausa.com/",
-        "logoUrl": None,
+        "logoUrl": "logos/hello-shawarma.png",
     },
     {
         "id": 30,
@@ -753,7 +753,10 @@ RESTAURANTS_DATA = [
         },
         "mapsQuery": "Kolachi+Tandoori+Grill+Express+Roselle+Rd+Schaumburg+IL",
         "lat": 42.0184, "lng": -88.0847,
-        "website": "https://kolachitandoori.com/",
+        # Domain has since lapsed and now redirects to an unrelated hotel
+        # site — confirmed stale as of this logo-sourcing pass, nulled
+        # rather than left pointing somewhere wrong.
+        "website": None,
         "logoUrl": None,
     },
     {
@@ -869,7 +872,7 @@ RESTAURANTS_DATA = [
         "mapsQuery": "The+Halal+Steakhouse+Army+Trail+Rd+Hanover+Park+IL",
         "lat": 41.9975, "lng": -88.1520,
         "website": "https://thehalalsteakhouse.com/",
-        "logoUrl": None,
+        "logoUrl": "logos/the-halal-steakhouse.png",
     },
     {
         "id": 38,

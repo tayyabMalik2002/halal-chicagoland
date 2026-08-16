@@ -1,5 +1,0 @@
-# Extra dependencies for scripts/fetch_logos.py only — not needed by the
-# deployed Flask app, so kept out of the main requirements.txt.
-requests==2.32.3
-beautifulsoup4==4.12.3
-Pillow==10.4.0

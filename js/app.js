@@ -52,25 +52,30 @@ function hasActiveFilters() {
 }
 
 /* ─── Card HTML ───────────────────────────────────────────── */
-// Builds the HTML markup for a single restaurant's grid card. Kept
-// intentionally minimal — name, cuisine/price, rating, neighborhood.
-// Phone and service tags live in the detail modal (see js/modal.js).
+// Builds the HTML markup for a single restaurant's grid card.
 function cardHTML(r) {
   const cuisineStr = r.cuisine.join(" · ");
+  const tagsHTML = r.features
+    .map((f) => `<span class="tag">${f}</span>`)
+    .join("");
 
   return `
   <article class="card" data-id="${r.id}" role="button" tabindex="0" aria-label="View details for ${r.name}">
+    <div class="card-banner" style="background:${r.bannerGradient}">
+      <span class="banner-emoji">${r.emoji}</span>
+      <span class="certified-badge">
+        <svg viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        Zabiha Halal
+      </span>
+    </div>
     <div class="card-body">
-      <div class="card-head">
-        ${logoTileHTML(r)}
-        <div class="card-head-text">
-          <h2 class="card-name">${r.name}</h2>
-          <div class="card-meta">
-            <span>${cuisineStr}</span>
-            <span class="card-meta-dot">·</span>
-            <span class="price">${r.priceRange}</span>
-          </div>
-        </div>
+      <h2 class="card-name">${r.name}</h2>
+      <div class="card-meta">
+        <span>${cuisineStr}</span>
+        <span class="card-meta-dot">·</span>
+        <span class="price">${r.priceRange}</span>
       </div>
       <div class="stars">
         <div class="star-group">${renderStars(r.rating)}</div>
@@ -84,7 +89,14 @@ function cardHTML(r) {
           </svg>
           <span>${r.area}</span>
         </div>
+        <div class="card-info-row">
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+          </svg>
+          <span>${r.phone}</span>
+        </div>
       </div>
+      <div class="card-tags">${tagsHTML}</div>
     </div>
   </article>`;
 }

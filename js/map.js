@@ -56,7 +56,7 @@ function distanceMiles(lat1, lng1, lat2, lng2) {
 function popupHTML(r) {
   return `
     <div class="map-popup">
-      <div class="map-popup-name">${r.name}</div>
+      <div class="map-popup-name">${r.emoji} ${r.name}</div>
       <div class="map-popup-meta">${r.cuisine.join(" · ")} · <span class="price">${r.priceRange}</span></div>
       <div class="map-popup-meta">${r.area}</div>
       <button class="map-popup-btn" data-id="${r.id}">View Details</button>
@@ -81,7 +81,7 @@ function addRestaurantMarkers() {
 function listItemHTML(r, distance) {
   return `
     <div class="map-list-item" data-id="${r.id}" role="listitem" tabindex="0">
-      ${logoTileHTML(r, "sm")}
+      <div class="map-list-emoji" style="background:${r.bannerGradient}">${r.emoji}</div>
       <div class="map-list-body">
         <div class="map-list-name">${r.name}</div>
         <div class="map-list-meta">

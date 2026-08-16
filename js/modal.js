@@ -32,20 +32,6 @@ function renderStars(rating) {
   return stars;
 }
 
-/* ─── Restaurant logo tile ────────────────────────────────────
-   Shared by the grid cards, the map sidebar list, and this modal:
-   a fixed-size neutral tile holding either the restaurant's logo
-   image or, when none is on file, its first initial in gold serif
-   type. `sizeClass` is "sm", "lg", or "" for the default size. ── */
-function logoTileHTML(r, sizeClass = "") {
-  const cls = sizeClass ? ` ${sizeClass}` : "";
-  if (r.logoUrl) {
-    return `<div class="restaurant-logo${cls}"><img src="${r.logoUrl}" alt="" loading="lazy" /></div>`;
-  }
-  const initial = (r.name || "").trim().charAt(0).toUpperCase() || "?";
-  return `<div class="restaurant-logo${cls}"><span class="restaurant-logo-fallback">${initial}</span></div>`;
-}
-
 /* ─── Modal ───────────────────────────────────────────────── */
 // Fetches a restaurant's details by id, fills the modal, and shows it.
 async function openModal(id) {
@@ -84,21 +70,21 @@ async function openModal(id) {
   const mapsUrl = `https://maps.google.com/?q=${r.mapsQuery}`;
 
   modalInner.innerHTML = `
-    <div class="modal-header">
-      ${logoTileHTML(r, "lg")}
-      <div class="modal-header-text">
-        <h2 class="modal-name">${r.name}</h2>
-        <div class="modal-cert">
-          <svg viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-          </svg>
-          Certified Zabiha Halal — ${r.certifiedBy}${r.certYear ? ` (since ${r.certYear})` : ""}
-        </div>
-      </div>
+    <div class="modal-banner" style="background:${r.bannerGradient}">
+      <span class="modal-banner-emoji">${r.emoji}</span>
     </div>
     <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
 
     <div class="modal-body">
+      <h2 class="modal-name">${r.name}</h2>
+
+      <div class="modal-cert">
+        <svg viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        Certified Zabiha Halal — ${r.certifiedBy}${r.certYear ? ` (since ${r.certYear})` : ""}
+      </div>
+
       <div class="modal-meta">
         <div class="stars">
           <div class="star-group">${renderStars(r.rating)}</div>
@@ -141,7 +127,7 @@ async function openModal(id) {
       <div class="hours-grid">${hoursHTML}</div>
 
       <div class="modal-section-title">Dining Options</div>
-      <div class="modal-tags">${tagsHTML}</div>
+      <div class="modal-tags" style="margin-bottom:1.5rem">${tagsHTML}</div>
 
       <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="btn-maps">
         <svg viewBox="0 0 20 20" fill="currentColor">

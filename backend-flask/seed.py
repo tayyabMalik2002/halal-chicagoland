@@ -8,8 +8,7 @@ from sqlalchemy import text
 from app import create_app
 from app.extensions import db
 from app.models import Cuisine, Feature, Hour, Restaurant
-
-DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+from app.utils import DAYS, get_or_create
 
 RESTAURANTS_DATA = [
     {
@@ -944,16 +943,6 @@ RESTAURANTS_DATA = [
         "logoUrl": "logos/mediterranean-market.png",
     },
 ]
-
-
-def get_or_create(cache, model, name):
-    if name not in cache:
-        instance = model.query.filter_by(name=name).first()
-        if instance is None:
-            instance = model(name=name)
-            db.session.add(instance)
-        cache[name] = instance
-    return cache[name]
 
 
 def seed():

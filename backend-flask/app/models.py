@@ -1,5 +1,3 @@
-from flask import url_for
-
 from .extensions import db
 
 restaurant_cuisines = db.Table(
@@ -56,17 +54,8 @@ class Restaurant(db.Model):
     maps_query = db.Column(db.String(256), nullable=False)
     lat = db.Column(db.Float, nullable=False)
     lng = db.Column(db.Float, nullable=False)
-    website = db.Column(db.String(512), nullable=True)
-    # Path relative to app/static (e.g. "logos/al-bawadi-grill.png"), not a
-    # full URL — see scripts/fetch_logos.py. Resolved to an absolute URL at
-    # serialization time via logo_url_absolute() so it's correct whether the
-    # API is hit at localhost or the deployed Azure host.
-    logo_url = db.Column(db.String(512), nullable=True)
-
-    def logo_url_absolute(self):
-        if not self.logo_url:
-            return None
-        return url_for("static", filename=self.logo_url, _external=True)
+    emoji = db.Column(db.String(8), nullable=False)
+    banner_gradient = db.Column(db.String(256), nullable=False)
 
     cuisines = db.relationship("Cuisine", secondary=restaurant_cuisines, backref="restaurants")
     features = db.relationship("Feature", secondary=restaurant_features, backref="restaurants")
@@ -96,8 +85,8 @@ class Restaurant(db.Model):
             "mapsQuery": self.maps_query,
             "lat": self.lat,
             "lng": self.lng,
-            "website": self.website,
-            "logoUrl": self.logo_url_absolute(),
+            "emoji": self.emoji,
+            "bannerGradient": self.banner_gradient,
         }
 
     def to_map_dict(self):
@@ -110,5 +99,6 @@ class Restaurant(db.Model):
             "rating": self.rating,
             "lat": self.lat,
             "lng": self.lng,
-            "logoUrl": self.logo_url_absolute(),
+            "emoji": self.emoji,
+            "bannerGradient": self.banner_gradient,
         }

@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from .config import Config
 from .extensions import db
@@ -10,6 +11,13 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
     app.json.sort_keys = False  # preserve Mon->Sun order in the `hours` object
+
+    # Azure Container Apps' ingress terminates TLS and forwards to gunicorn
+    # over plain HTTP, setting X-Forwarded-Proto: https on the original
+    # request. Without this, Flask has no way to know the real request was
+    # HTTPS, so url_for(..., _external=True) (used for logo_url) generates
+    # http:// links even though the site is only ever served over https.
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
     db.init_app(app)
     CORS(app)

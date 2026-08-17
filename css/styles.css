@@ -1324,6 +1324,14 @@ footer {
   color: var(--grey-1);
 }
 
+.footer-admin-link {
+  color: var(--grey-1);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.footer-admin-link:hover { color: var(--gold-text); }
+
 /* ─── Scrollbar ─────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
@@ -1359,6 +1367,200 @@ footer {
 
   .analyzer-tab { font-size: var(--text-sm); padding: var(--space-2) 0.4rem; }
   .menu-item-top { flex-wrap: wrap; }
+}
+
+/* ─── Admin Portal ──────────────────────────────────────────────── */
+.admin-login-wrap {
+  min-height: calc(100vh - 64px - 120px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3) var(--space-2);
+}
+
+/* The [hidden] attribute selector has the same specificity as the class
+   selector above, but author styles beat the browser's default
+   `[hidden] { display: none }` UA rule — without this, .admin-login-wrap's
+   own `display: flex` would win and the "hidden" login card would still
+   render. Applies to any other view-toggled section the same way. */
+.admin-login-wrap[hidden],
+.admin-main[hidden] {
+  display: none;
+}
+
+.admin-login-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.admin-login-title {
+  font-family: var(--font-serif);
+  font-size: var(--text-display);
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+.admin-login-sub {
+  font-size: var(--text-sm);
+  color: var(--text-2);
+  margin-bottom: var(--space-2);
+}
+
+.admin-field-label {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--grey-1);
+}
+
+.admin-login-card .btn-analyze { margin-top: var(--space-2); }
+
+/* Dashboard */
+.admin-main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-3) var(--space-4);
+}
+
+.admin-dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.admin-dashboard-header h1 {
+  font-family: var(--font-serif);
+  font-size: var(--text-display);
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+.admin-dashboard-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.admin-btn-inline { width: auto; margin-top: 0; padding: var(--space-1) var(--space-3); }
+
+.admin-table-wrap {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.admin-table th {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--grey-1);
+  font-weight: 700;
+}
+
+.admin-table tbody tr:hover { background: var(--surface-hover); }
+.admin-table tbody tr:last-child td { border-bottom: none; }
+
+.admin-table-actions { display: flex; gap: var(--space-1); white-space: nowrap; }
+
+.admin-row-btn {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px var(--space-2);
+  color: var(--text-2);
+  transition: border-color var(--transition), color var(--transition);
+}
+
+.admin-row-btn:hover { color: var(--text-1); border-color: var(--border-hover); }
+.admin-row-btn-danger:hover { color: var(--status-danger); border-color: var(--status-danger); }
+
+/* Add/Edit form modal */
+.admin-form-modal { max-width: 720px; }
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.admin-field { display: flex; flex-direction: column; gap: 4px; }
+.admin-field-wide { grid-column: 1 / -1; }
+
+.admin-field label {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--grey-1);
+}
+
+.admin-textarea { resize: vertical; min-height: 4.5rem; font-family: var(--font-sans); }
+
+.admin-hours-fieldset {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.admin-hours-fieldset legend {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold-text);
+  padding: 0 4px;
+}
+
+.admin-hours-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-2);
+}
+
+.admin-form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.admin-form-buttons .btn-analyze { width: auto; margin-top: 0; padding: var(--space-1) var(--space-3); }
+
+@media (max-width: 768px) {
+  .admin-form-grid,
+  .admin-hours-grid { grid-template-columns: 1fr; }
+  .admin-dashboard-header { align-items: flex-start; }
+  .admin-main { padding: var(--space-2) var(--space-2) var(--space-3); }
 }
 
 /* ─── Animations ────────────────────────────────────────────────── */

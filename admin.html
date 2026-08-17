@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#F7F1E3" />
+
+  <title>Admin | Zabiha Halal Chicagoland</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- ── Header ───────────────────────────────────────────── -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">☪</div>
+        <div class="logo-text">Zabiha Halal <span>Chicagoland</span></div>
+      </div>
+      <nav class="header-nav">
+        <a href="index.html" class="nav-link">Directory</a>
+        <a href="map.html" class="nav-link">Map</a>
+        <a href="menu-analyzer.html" class="nav-link">Analyze a Menu</a>
+      </nav>
+      <div class="header-badge">Admin</div>
+    </div>
+  </header>
+
+  <!-- ── Login ────────────────────────────────────────────── -->
+  <main class="admin-login-wrap" id="admin-login-view">
+    <form class="admin-login-card" id="admin-login-form" novalidate>
+      <h1 class="admin-login-title">Admin Login</h1>
+      <p class="admin-login-sub">Manage restaurant listings for Zabiha Halal Chicagoland.</p>
+
+      <label class="admin-field-label" for="admin-password">Password</label>
+      <input
+        class="analyzer-input"
+        type="password"
+        id="admin-password"
+        name="password"
+        autocomplete="current-password"
+        required
+      />
+      <p class="field-error" id="admin-login-error" role="alert"></p>
+
+      <button type="submit" class="btn-analyze" id="admin-login-submit">Log In</button>
+    </form>
+  </main>
+
+  <!-- ── Dashboard (hidden until logged in) ─────────────────── -->
+  <main class="admin-main" id="admin-dashboard-view" hidden>
+    <div class="admin-dashboard-header">
+      <h1>Restaurant Listings</h1>
+      <div class="admin-dashboard-actions">
+        <span class="result-count" id="admin-count" aria-live="polite"></span>
+        <button type="button" class="btn-analyze admin-btn-inline" id="admin-add-btn">+ Add Restaurant</button>
+        <button type="button" class="btn-clear visible" id="admin-logout-btn">Log Out</button>
+      </div>
+    </div>
+
+    <p class="field-error" id="admin-dashboard-error" role="alert"></p>
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Area</th>
+            <th scope="col">Cuisine</th>
+            <th scope="col">Price</th>
+            <th scope="col">Rating</th>
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody id="admin-table-body">
+          <!-- rows rendered by JS -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- ── Add / Edit form ─────────────────────────────────────── -->
+  <div class="modal-overlay" id="admin-form-overlay" role="dialog" aria-modal="true" aria-label="Restaurant form">
+    <div class="modal admin-form-modal">
+      <button type="button" class="modal-close" id="admin-form-close" aria-label="Close">✕</button>
+      <div class="modal-body">
+        <h2 class="modal-name" id="admin-form-title">Add Restaurant</h2>
+
+        <form id="admin-restaurant-form" class="admin-form" novalidate>
+          <div class="admin-form-grid">
+            <div class="admin-field">
+              <label for="f-name">Name *</label>
+              <input class="analyzer-input" id="f-name" name="name" required />
+            </div>
+            <div class="admin-field">
+              <label for="f-area">Area *</label>
+              <input class="analyzer-input" id="f-area" name="area" required />
+            </div>
+            <div class="admin-field admin-field-wide">
+              <label for="f-address">Address *</label>
+              <input class="analyzer-input" id="f-address" name="address" required />
+            </div>
+            <div class="admin-field">
+              <label for="f-phone">Phone *</label>
+              <input class="analyzer-input" id="f-phone" name="phone" required />
+            </div>
+            <div class="admin-field">
+              <label for="f-price">Price range *</label>
+              <select class="analyzer-input" id="f-price" name="priceRange" required>
+                <option value="$">$</option>
+                <option value="$$">$$</option>
+                <option value="$$$">$$$</option>
+              </select>
+            </div>
+            <div class="admin-field">
+              <label for="f-cuisine">Cuisine (comma-separated)</label>
+              <input class="analyzer-input" id="f-cuisine" name="cuisine" placeholder="Lebanese, Mediterranean" />
+            </div>
+            <div class="admin-field">
+              <label for="f-features">Features (comma-separated)</label>
+              <input class="analyzer-input" id="f-features" name="features" placeholder="Dine-in, Takeout, Delivery" />
+            </div>
+            <div class="admin-field">
+              <label for="f-certifiedBy">Certified by *</label>
+              <input class="analyzer-input" id="f-certifiedBy" name="certifiedBy" required />
+            </div>
+            <div class="admin-field">
+              <label for="f-certYear">Certified since (year)</label>
+              <input class="analyzer-input" type="number" id="f-certYear" name="certYear" min="1900" max="2100" />
+            </div>
+            <div class="admin-field">
+              <label for="f-rating">Rating (0–5)</label>
+              <input class="analyzer-input" type="number" id="f-rating" name="rating" min="0" max="5" step="0.1" />
+            </div>
+            <div class="admin-field">
+              <label for="f-reviewCount">Review count</label>
+              <input class="analyzer-input" type="number" id="f-reviewCount" name="reviewCount" min="0" step="1" />
+            </div>
+            <div class="admin-field">
+              <label for="f-lat">Latitude *</label>
+              <input class="analyzer-input" type="number" id="f-lat" name="lat" step="any" required />
+            </div>
+            <div class="admin-field">
+              <label for="f-lng">Longitude *</label>
+              <input class="analyzer-input" type="number" id="f-lng" name="lng" step="any" required />
+            </div>
+            <div class="admin-field admin-field-wide">
+              <label for="f-description">Description</label>
+              <textarea class="analyzer-input admin-textarea" id="f-description" name="description" rows="3"></textarea>
+            </div>
+            <div class="admin-field">
+              <label for="f-website">Website</label>
+              <input class="analyzer-input" type="url" id="f-website" name="website" placeholder="https://…" />
+            </div>
+            <div class="admin-field">
+              <label for="f-logoUrl">Logo path</label>
+              <input class="analyzer-input" id="f-logoUrl" name="logoUrl" placeholder="logos/restaurant-name.png" />
+            </div>
+            <div class="admin-field">
+              <label for="f-mapsQuery">Google Maps query</label>
+              <input class="analyzer-input" id="f-mapsQuery" name="mapsQuery" placeholder="Auto-generated if left blank" />
+            </div>
+          </div>
+
+          <fieldset class="admin-hours-fieldset">
+            <legend>Hours</legend>
+            <div class="admin-hours-grid" id="admin-hours-grid">
+              <!-- 7 day inputs rendered by JS -->
+            </div>
+          </fieldset>
+
+          <p class="field-error" id="admin-form-error" role="alert"></p>
+
+          <div class="admin-form-buttons">
+            <button type="button" class="btn-clear visible" id="admin-form-cancel">Cancel</button>
+            <button type="submit" class="btn-analyze admin-btn-inline" id="admin-form-submit">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Footer ───────────────────────────────────────────── -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">☪ Zabiha Halal <span>Chicagoland</span></div>
+      <p class="footer-copy">&copy; 2026 Zabiha Halal Chicagoland. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

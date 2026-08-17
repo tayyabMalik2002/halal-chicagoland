@@ -63,6 +63,53 @@ function fetchAreas() {
   return apiFetch("/areas");
 }
 
+/* ─── Admin client ─────────────────────────────────────────────
+   Write endpoints under /admin/* — gated by a bearer token from
+   adminLogin(). Used only by admin.html / js/admin.js. ──────── */
+async function apiRequest(path, { method = "GET", body, token } = {}) {
+  const headers = {};
+  if (body !== undefined) headers["Content-Type"] = "application/json";
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(API_BASE + path, {
+    method,
+    headers,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+
+  if (res.status === 204) return null;
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data.error || `Request to ${path} failed (${res.status})`);
+    err.status = res.status;
+    err.details = data.details;
+    throw err;
+  }
+  return data;
+}
+
+// Exchanges the shared admin password for a short-lived bearer token.
+function adminLogin(password) {
+  return apiRequest("/admin/login", { method: "POST", body: { password } });
+}
+
+// Creates a new restaurant listing. `payload` uses the same shape as a
+// restaurant object returned by fetchRestaurant().
+function adminCreateRestaurant(payload, token) {
+  return apiRequest("/admin/restaurants", { method: "POST", body: payload, token });
+}
+
+// Updates an existing restaurant listing (full replace, same payload shape).
+function adminUpdateRestaurant(id, payload, token) {
+  return apiRequest(`/admin/restaurants/${id}`, { method: "PUT", body: payload, token });
+}
+
+// Deletes a restaurant listing.
+function adminDeleteRestaurant(id, token) {
+  return apiRequest(`/admin/restaurants/${id}`, { method: "DELETE", token });
+}
+
 // Submits a menu photo and/or restaurant name to the AI Menu Analyzer
 // (Express backend). Pass a FormData with `image` and/or `restaurant_name` /
 // `restaurant_location` fields. Throws an Error with a `.status` property

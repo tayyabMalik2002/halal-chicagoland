@@ -59,7 +59,7 @@ function cardHTML(r) {
   const cuisineStr = r.cuisine.join(" · ");
 
   return `
-  <article class="card" data-id="${r.id}" role="button" tabindex="0" aria-label="View details for ${r.name}">
+  <div class="card" data-id="${r.id}" role="button" tabindex="0" aria-label="View details for ${r.name}">
     <div class="card-body">
       <div class="card-head">
         ${logoTileHTML(r)}
@@ -86,7 +86,7 @@ function cardHTML(r) {
         </div>
       </div>
     </div>
-  </article>`;
+  </div>`;
 }
 
 /* ─── Render grid ─────────────────────────────────────────── */

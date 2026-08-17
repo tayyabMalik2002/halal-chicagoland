@@ -230,10 +230,11 @@ restaurantForm.addEventListener("submit", async (e) => {
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   loginError.textContent = "";
+  const username = document.getElementById("admin-username").value;
   const password = document.getElementById("admin-password").value;
 
   try {
-    const { token } = await adminLogin(password);
+    const { token } = await adminLogin(username, password);
     setToken(token);
     document.getElementById("admin-password").value = "";
     showDashboard();

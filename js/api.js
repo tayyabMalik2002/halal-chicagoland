@@ -89,9 +89,9 @@ async function apiRequest(path, { method = "GET", body, token } = {}) {
   return data;
 }
 
-// Exchanges the shared admin password for a short-lived bearer token.
-function adminLogin(password) {
-  return apiRequest("/admin/login", { method: "POST", body: { password } });
+// Exchanges the shared admin username/password for a short-lived bearer token.
+function adminLogin(username, password) {
+  return apiRequest("/admin/login", { method: "POST", body: { username, password } });
 }
 
 // Creates a new restaurant listing. `payload` uses the same shape as a

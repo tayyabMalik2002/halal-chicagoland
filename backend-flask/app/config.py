@@ -22,10 +22,12 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # Shared admin password gating write access to /api/v1/admin/* (see
-    # app/routes/admin.py). Local-dev-only default so `python run.py` works
-    # out of the box; production sets a real value via a Container Apps
-    # secret, never committed.
+    # Shared admin username/password gating write access to /api/v1/admin/*
+    # (see app/routes/admin.py) — a single hardcoded account, not a full
+    # user-account system. Local-dev-only defaults so `python run.py` works
+    # out of the box; production sets real values via Container Apps
+    # secrets, never committed.
+    ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
     ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin-dev-password")
     # Secret used to sign admin auth tokens (itsdangerous). Falls back to the
     # admin password itself locally so no extra env var is needed in dev;

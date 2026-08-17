@@ -1,3 +1,4 @@
+import secrets
 from functools import wraps
 
 from flask import Blueprint, current_app, jsonify, request
@@ -41,9 +42,17 @@ def require_admin(view):
 @bp.post("/login")
 def login():
     data = request.get_json(silent=True) or {}
+    username = data.get("username", "")
     password = data.get("password", "")
-    if not password or password != current_app.config["ADMIN_PASSWORD"]:
-        return jsonify({"error": "Incorrect password."}), 401
+
+    # secrets.compare_digest avoids leaking timing information about how
+    # much of the guess matched — trivial for a school project's threat
+    # model, but free to do correctly.
+    username_ok = secrets.compare_digest(username, current_app.config["ADMIN_USERNAME"])
+    password_ok = secrets.compare_digest(password, current_app.config["ADMIN_PASSWORD"])
+    if not (username_ok and password_ok):
+        return jsonify({"error": "Incorrect username or password."}), 401
+
     token = _signer().sign("admin").decode("utf-8")
     return jsonify({"token": token})
 

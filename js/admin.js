@@ -76,7 +76,7 @@ function rowHTML(r) {
 async function loadDashboard() {
   dashboardError.textContent = "";
   try {
-    const data = await fetchRestaurants({ sort: "name" });
+    const data = await fetchRestaurants({ sort: "name" }); // GET /api/v1/restaurants?sort=name (Flask; see js/api.js) — no auth needed, same public endpoint the directory page uses
     restaurants = data.results;
     adminCount.innerHTML = `<strong>${restaurants.length}</strong> restaurants`;
     tableBody.innerHTML = restaurants.map(rowHTML).join("");
@@ -96,7 +96,7 @@ tableBody.addEventListener("click", async (e) => {
     const restaurant = restaurants.find((r) => r.id === id);
     if (!confirm(`Delete "${restaurant?.name || "this restaurant"}"? This can't be undone.`)) return;
     try {
-      await adminDeleteRestaurant(id, getToken());
+      await adminDeleteRestaurant(id, getToken()); // DELETE /api/v1/admin/restaurants/:id (Flask, bearer token required; see js/api.js)
       loadDashboard();
     } catch (err) {
       if (err.status === 401) return showLogin("Your session expired. Please log in again.");
@@ -130,7 +130,7 @@ function openFormForAdd() {
 
 async function openFormForEdit(id) {
   try {
-    const r = await fetchRestaurant(id);
+    const r = await fetchRestaurant(id); // GET /api/v1/restaurants/:id (Flask, public — no token needed just to prefill the edit form; see js/api.js)
     editingId = id;
     formTitle.textContent = `Edit ${r.name}`;
     restaurantForm.reset();
@@ -211,9 +211,9 @@ restaurantForm.addEventListener("submit", async (e) => {
 
   try {
     if (editingId) {
-      await adminUpdateRestaurant(editingId, payload, getToken());
+      await adminUpdateRestaurant(editingId, payload, getToken()); // PUT /api/v1/admin/restaurants/:id (Flask, bearer token required; see js/api.js)
     } else {
-      await adminCreateRestaurant(payload, getToken());
+      await adminCreateRestaurant(payload, getToken()); // POST /api/v1/admin/restaurants (Flask, bearer token required; see js/api.js)
     }
     closeForm();
     loadDashboard();
@@ -234,7 +234,7 @@ loginForm.addEventListener("submit", async (e) => {
   const password = document.getElementById("admin-password").value;
 
   try {
-    const { token } = await adminLogin(username, password);
+    const { token } = await adminLogin(username, password); // POST /api/v1/admin/login (Flask; see js/api.js) — no cookie/session, just a bearer token we store ourselves
     setToken(token);
     document.getElementById("admin-password").value = "";
     showDashboard();

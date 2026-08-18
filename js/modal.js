@@ -51,7 +51,7 @@ function logoTileHTML(r, sizeClass = "") {
 async function openModal(id) {
   let r;
   try {
-    r = await fetchRestaurant(id);
+    r = await fetchRestaurant(id); // GET /api/v1/restaurants/:id (Flask; see js/api.js)
   } catch (err) {
     console.error("Failed to load restaurant details:", err);
     modalInner.innerHTML = `

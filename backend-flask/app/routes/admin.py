@@ -39,6 +39,10 @@ def require_admin(view):
     return wrapped
 
 
+# POST /api/v1/admin/login — called from js/api.js's adminLogin(), called
+# from js/admin.js's login form submit handler. Returns a signed, time-boxed
+# token (not a session cookie) that the client stores in sessionStorage and
+# resends as `Authorization: Bearer <token>` on every write below.
 @bp.post("/login")
 def login():
     data = request.get_json(silent=True) or {}
@@ -104,6 +108,9 @@ def _apply_payload(restaurant, data):
     ]
 
 
+# POST /api/v1/admin/restaurants — called from js/api.js's
+# adminCreateRestaurant(), called from js/admin.js's restaurant form submit
+# handler when adding a new listing (editingId is null).
 @bp.post("/restaurants")
 @require_admin
 def create_restaurant():
@@ -119,6 +126,10 @@ def create_restaurant():
     return jsonify(restaurant.to_dict()), 201
 
 
+# PUT /api/v1/admin/restaurants/<id> — called from js/api.js's
+# adminUpdateRestaurant(), called from js/admin.js's restaurant form submit
+# handler when editing an existing listing (editingId is set). Full replace,
+# not a partial patch — the frontend always sends every field.
 @bp.put("/restaurants/<int:restaurant_id>")
 @require_admin
 def update_restaurant(restaurant_id):
@@ -136,6 +147,9 @@ def update_restaurant(restaurant_id):
     return jsonify(restaurant.to_dict())
 
 
+# DELETE /api/v1/admin/restaurants/<id> — called from js/api.js's
+# adminDeleteRestaurant(), called from js/admin.js's dashboard table row
+# "Delete" button, after a confirm() prompt (no soft-delete/undo).
 @bp.delete("/restaurants/<int:restaurant_id>")
 @require_admin
 def delete_restaurant(restaurant_id):

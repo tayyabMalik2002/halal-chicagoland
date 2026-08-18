@@ -208,7 +208,7 @@ btnLocate.addEventListener("click", locateUser);
 // Fetches the restaurant list, places all markers, and renders the initial (unsorted-by-distance) list on page load.
 (async function init() {
   try {
-    const data = await fetchMapRestaurants();
+    const data = await fetchMapRestaurants(); // GET /api/v1/restaurants/map (Flask; see js/api.js)
     restaurants = data.results;
   } catch (err) {
     mapListTitle.textContent = "Couldn't load restaurants";

@@ -155,7 +155,7 @@ async function runAnalysis(mode) {
   setBusy(true, loadingMessage);
 
   try {
-    const data = await analyzeMenu(formData);
+    const data = await analyzeMenu(formData); // POST /api/menu-analysis (Express; see js/api.js) — formData carries `image` and/or `restaurant_name`/`restaurant_location` depending on mode
     renderResults(data);
   } catch (err) {
     renderError(err);

@@ -22,6 +22,7 @@ const grid          = document.getElementById("grid");
 
 /* ─── Populate filter dropdowns ───────────────────────────── */
 // Fetches the cuisine/area lists from the API and fills the <select> elements.
+// fetchCuisines()/fetchAreas() -> GET /api/v1/cuisines, GET /api/v1/areas (Flask; see js/api.js).
 async function populateDropdowns() {
   const [cuisinesRes, areasRes] = await Promise.all([fetchCuisines(), fetchAreas()]);
   const cuisines = ["All Cuisines", ...cuisinesRes.cuisines];
@@ -128,7 +129,7 @@ async function render() {
   const requestId = ++renderRequestId;
   let data;
   try {
-    data = await fetchRestaurants(state);
+    data = await fetchRestaurants(state); // GET /api/v1/restaurants?search=&cuisine=&area=&sort= (Flask; see js/api.js)
   } catch (err) {
     if (requestId !== renderRequestId) return;
     grid.innerHTML = `
@@ -196,7 +197,7 @@ btnClear.addEventListener("click", () => {
 (async function init() {
   try {
     await populateDropdowns();
-    const data = await fetchRestaurants(state);
+    const data = await fetchRestaurants(state); // GET /api/v1/restaurants (Flask; see js/api.js) — initial unfiltered load
     totalCount = data.count;
     renderResults(data);
   } catch (err) {

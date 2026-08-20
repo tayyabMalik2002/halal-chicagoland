@@ -1,6 +1,6 @@
 const Anthropic = require('@anthropic-ai/sdk');
 
-const MODEL = 'claude-sonnet-4-6';
+const MODEL = 'claude-sonnet-5';
 
 // The SDK's default timeout is 10 minutes, which would leave a client
 // request (and the browser waiting on it) hanging far too long if the

@@ -124,7 +124,7 @@ function setBusy(isBusy, loadingMessage) {
       <div class="analyzer-loading">
         <div class="spinner"></div>
         <p>${escapeHTML(loadingMessage)}</p>
-        <p class="analyzer-loading-hint">This can take up to 20 seconds — thanks for your patience.</p>
+        <p class="analyzer-loading-hint">This can take up to a minute for a detailed menu — thanks for your patience.</p>
       </div>`;
   }
 }

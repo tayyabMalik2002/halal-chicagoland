@@ -4,10 +4,14 @@ const MODEL = 'claude-sonnet-5';
 
 // The SDK's default timeout is 10 minutes, which would leave a client
 // request (and the browser waiting on it) hanging far too long if the
-// upstream API stalls. 30s is generous for a single vision+text call while
-// still failing fast enough to hit the existing 502 fallback in
-// menuAnalysisController.js instead of tying up the connection.
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, timeout: 30_000 });
+// upstream API stalls. A detailed real-world menu photo (40+ items) with
+// full per-item reasoning routinely takes 40-55s to generate, so 75s gives
+// headroom above that while still failing fast enough to hit the existing
+// 502 fallback in menuAnalysisController.js instead of tying up the
+// connection indefinitely. maxRetries is capped at 1 (SDK default is 2) so a
+// timeout doesn't compound into a multi-minute wait before the client sees
+// an error.
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, timeout: 75_000, maxRetries: 1 });
 
 // Dev/demo fallback: with no key configured, return canned responses instead of
 // calling the real API. Excludes NODE_ENV=test since the Jest suite mocks the
@@ -134,7 +138,10 @@ const analyzeMenuImage = async (base64Data, mediaType) => {
 
   const message = await client.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    // 8192, not 4096: a detailed real-world menu (40+ items, each with a
+    // reasoning string) can hit the old 4096 cap mid-JSON (stop_reason:
+    // "max_tokens"), producing truncated, unparseable output.
+    max_tokens: 8192,
     system: PHOTO_SYSTEM_PROMPT,
     messages: [
       {
@@ -179,7 +186,9 @@ const findMenuByWebSearch = async (name, location) => {
   const locationText = location ? `near ${location}` : 'in the Chicago area';
   const message = await client.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    // Same reasoning as analyzeMenuImage above: a large found menu can
+    // exceed 4096 tokens of JSON output and get truncated.
+    max_tokens: 8192,
     system: NAME_SEARCH_SYSTEM_PROMPT,
     tools: [{ type: 'web_search_20250305', name: 'web_search' }],
     messages: [

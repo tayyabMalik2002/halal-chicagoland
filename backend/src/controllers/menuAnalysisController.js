@@ -117,6 +117,7 @@ const analyzeFromPhoto = async (req, res, { endpoint, restaurant, restaurantName
     const base64Data = req.file.buffer.toString('base64');
     aiResult = await aiMenuService.analyzeMenuImage(base64Data, req.file.mimetype);
   } catch (err) {
+    console.error('Menu photo analysis failed:', err);
     await logRequest(endpoint, restaurant ? restaurant.restaurant_id : null, 502);
     throw ApiError.badGateway('Failed to analyze the menu image.');
   }
@@ -170,6 +171,7 @@ const analyzeFromName = async (req, res, { endpoint, restaurant, restaurantName,
   try {
     aiResult = await aiMenuService.findMenuByWebSearch(restaurantName, restaurantLocation);
   } catch (err) {
+    console.error('Menu name search failed:', err);
     await logRequest(endpoint, restaurant ? restaurant.restaurant_id : null, 502);
     throw ApiError.badGateway('Failed to search for the menu.');
   }

@@ -4,6 +4,8 @@
 
 This section documents the troubleshooting process behind real issues found and fixed during development, in the order they were addressed. Each entry follows the same structure: what happened, the environment at the time, how to reproduce it, root-cause diagnosis, what was consulted while researching a fix, the actual resolution, and how the fix was verified.
 
+**AI assistance disclosure.** In addition to the official documentation and source repositories cited under "Research process" for each issue below, an AI coding assistant (Claude / Claude Code) was used throughout this project to help investigate symptoms, narrow down root causes, and validate proposed fixes before they were applied — consistent with the assignment's allowance for AI tools as a research resource.
+
 ---
 
 ## Issue 1 — Malformed JSON body returned a bare 500 instead of a 400
@@ -149,3 +151,5 @@ Re-verified against the live production Flask API post-deploy: same JSON 404 con
 ## Sharing / posting notes
 
 Per the assignment's posting rules, all fixes above were made directly in application code (not worked around) and are traceable to specific commits (`9d5bb5c`, `f6d7b84`) and file/line locations, so any reviewer can independently verify each fix against the actual diff rather than taking this document's word for it. Issues 1–5 are also cross-referenced from the automated test suite where a corresponding regression test exists (see [01-production-support.md §1.4.1](01-production-support.md#141-automated-tests-unit--integration)); issues 3, 6, and 7 are inherently harder to cover with an automated test (a live idle-connection failure, a real reverse-proxy hop, and a documentation-only issue respectively) and were verified by code review and manual reproduction instead — noted explicitly above rather than overstating test coverage that doesn't exist.
+
+**Resources consulted, in full:** official framework/SDK documentation and source repositories (Express.js, `body-parser`/`http-errors`, the Anthropic Node SDK, Node's `EventEmitter` docs, `node-postgres`, Flask, Azure Container Apps docs, Werkzeug `ProxyFix`) as cited per issue above, plus an AI coding assistant (Claude / Claude Code) used throughout for investigation, root-cause narrowing, and fix validation.
